@@ -1,0 +1,7 @@
+{
+	"Group": "com.adesi",
+	"Name": "MagicalScience",
+	"Version": "0.1.0",
+	"Main": "com.adesi.plugin.MSPlugin",
+	"IncludesAssetPack": true
+}

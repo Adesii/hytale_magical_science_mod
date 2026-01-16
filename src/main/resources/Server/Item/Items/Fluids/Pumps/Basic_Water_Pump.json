@@ -1,0 +1,100 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Bench_Alchemy.name",
+    "Description": "server.items.Bench_Alchemy.description"
+  },
+  "Icon": "Icons/ItemsGenerated/Basic_Water_Pump.png",
+  "Categories": [
+    "Furniture.Benches"
+  ],
+  "Recipe": {
+    "TimeSeconds": 3,
+    "Input": [
+      {
+        "ResourceTypeId": "Rock",
+        "Quantity": 20
+      },
+      {
+        "ItemId": "Ingredient_Bar_Gold",
+        "Quantity": 5
+      },
+      {
+        "ItemId": "Ingredient_Sac_Venom",
+        "Quantity": 10
+      },
+      {
+        "ItemId": "Ingredient_Bone_Fragment",
+        "Quantity": 10
+      }
+    ]
+  },
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Blocks/Fluids/Pumps/Basic_Water_Pump.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "BlockTextures/Fluids/Pumps/Basic_Water_Pump.png",
+        "Weight": 1
+      }
+    ],
+    "HitboxType": "Basic_Water_Pump",
+    "VariantRotation": "NESW",
+    "State": {
+      "Id": "crafting",
+      "Definitions": {
+        "CraftCompleted": {
+          "CustomModelAnimation": "Blocks/Benches/Alchemy_Crafting.blockyanim",
+          "Looping": true
+        },
+        "CraftCompletedInstant": {
+          "CustomModelAnimation": "Blocks/Benches/Alchemy_Crafting.blockyanim"
+        }
+      }
+    },
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "Benches"
+      }
+    },
+    "BlockParticleSetId": "Stone",
+    "ParticleColor": "#5C583E",
+    "Support": {
+      "Down": [
+        {
+          "FaceType": "Full"
+        }
+      ]
+    },
+    "BlockSoundSetId": "Stone",
+    "Supporting": {
+      "South": [
+        {
+          "FaceType": "Basic_Pipe"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Block",
+  "IconProperties": {
+    "Scale": 0.3,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      -2,
+      -28
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Pump"
+    ]
+  },
+  "MaxStack": 10,
+  "ItemLevel": 9,
+  "ItemSoundSetId": "ISS_Blocks_Wood"
+}

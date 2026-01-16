@@ -1,0 +1,24 @@
+{
+  "TranslationProperties": {
+    "Name": "items.my_new_block.name",
+    "Description": "items.my_new_block.description"
+  },
+  "Id": "MyNewBlock",
+  "PlayerAnimationsId": "Block",
+  "MaxStack": 100,
+  "Icon": "Icons/ItemsGenerated/my_new_block.png",
+  "Categories": [
+    ""
+  ],
+  "BlockType": {
+    "Material": "Solid",
+    "DrawType": "Cube",
+    "Opacity": "Transparent",
+    "Textures": [
+      {
+        "All": "BlockTextures/texture.png",
+        "Weight": 1
+      }
+    ]
+  }
+}

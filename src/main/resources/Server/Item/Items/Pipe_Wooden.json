@@ -1,0 +1,18 @@
+{
+  "Parent": "pipe",
+  "TranslationProperties": {
+    "Description": "items.my_new_block.description",
+    "Name": "items.my_new_block.name"
+  },
+  "Light": {
+    "Color": "#d11",
+    "Radius": 10
+  },
+  "BlockType": {
+    "Parent": "pipe",
+    "Light": {
+      "Color": "#06e",
+      "Radius": 4
+    }
+  }
+}

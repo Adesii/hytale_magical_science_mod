@@ -3,3 +3,16 @@
 
 # Ignore Gradle build output directory
 build
+
+bin
+
+libs
+
+runserver
+
+source_models
+
+.idea
+.settings
+.project
+.classpath

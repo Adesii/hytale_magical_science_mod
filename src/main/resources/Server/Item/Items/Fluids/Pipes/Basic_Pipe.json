@@ -1,0 +1,185 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Basic_Pipe.name"
+  },
+  "Icon": "Icons/ItemsGenerated/Basic_Pipe.png",
+  "Categories": [
+    "Blocks.Deco"
+  ],
+  "Interactions": {
+    "Primary": "Block_Primary",
+    "Secondary": "Block_Secondary"
+  },
+  "Set": "Wood_Softwood_Planks",
+  "Recipe": {
+    "TimeSeconds": 0.5,
+    "Input": [
+      {
+        "ResourceTypeId": "Wood_Planks",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 1
+      }
+    ],
+    "OutputQuantity": 4,
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Tinkering"
+        ]
+      }
+    ]
+  },
+  "BlockType": {
+    "DrawType": "Model",
+    "Opacity": "Transparent",
+    "CustomModel": "Blocks/Fluids/Pipes/Pipe_None.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "Resources/Ores/Ore_Textures/Copper.png",
+        "Weight": 1
+      }
+    ],
+    "Group": "Wood",
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "SoftBlocks"
+      }
+    },
+    "BlockParticleSetId": "Stone",
+    "Material": "Solid",
+    "HitboxType": "Rail",
+    "State": {
+      "Definitions": {
+        "Corner_Left": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Corner_Left.blockymodel",
+          "Basic_Pipe": {
+            "Points": [
+              {
+                "Point": {
+                  "X": 0,
+                  "Y": 0.1,
+                  "Z": 0.5
+                },
+                "Normal": {
+                  "X": 0,
+                  "Y": 1,
+                  "Z": 0
+                }
+              },
+              {
+                "Point": {
+                  "X": 0.3,
+                  "Y": 0.1,
+                  "Z": 0.5
+                },
+                "Normal": {
+                  "X": 0,
+                  "Y": 1,
+                  "Z": 0
+                }
+              },
+              {
+                "Point": {
+                  "X": 0.5,
+                  "Y": 0.1,
+                  "Z": 0.7
+                },
+                "Normal": {
+                  "X": 0,
+                  "Y": 1,
+                  "Z": 0
+                }
+              },
+              {
+                "Point": {
+                  "X": 0.5,
+                  "Y": 0.1,
+                  "Z": 1
+                },
+                "Normal": {
+                  "X": 0,
+                  "Y": 1,
+                  "Z": 0
+                }
+              }
+            ]
+          }
+        },
+        "Cross": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Cross.blockymodel"
+        },
+        "T": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_T.blockymodel"
+        },
+        "One_Way": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Straight_One_Way.blockymodel"
+        },
+        "Straight": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Straight.blockymodel"
+        }
+      }
+    },
+    "ParticleColor": "#828282",
+    "BlockSoundSetId": "Metal",
+    "ConnectedBlockRuleSet": {
+      "Type": "CustomTemplate",
+      "TemplateShapeAssetId": "BasicPipeConnectedTemplate",
+      "TemplateShapeBlockPatterns": {
+        "Straight": "*Basic_Pipe_State_Definitions_Straight",
+        "Corner_Left": "*Basic_Pipe_State_Definitions_Corner_Left",
+        "Corner_Right": "*Basic_Pipe_State_Definitions_Corner_Right",
+        "TShape": "*Basic_Pipe_State_Definitions_T",
+        "Cross": "*Basic_Pipe_State_Definitions_Cross",
+        "None": "Basic_Pipe",
+        "Straight_One_Way": "*Basic_Pipe_State_Definitions_One_Way"
+      }
+    },
+    "VariantRotation": "All",
+    "Supporting": {
+      "North": [
+        {
+          "FaceType": "Basic_Pipe"
+        }
+      ],
+      "East": [
+        {
+          "FaceType": "Basic_Pipe"
+        }
+      ],
+      "South": [
+        {
+          "FaceType": "Basic_Pipe"
+        }
+      ],
+      "West": [
+        {
+          "FaceType": "Basic_Pipe"
+        }
+      ]
+    }
+  },
+  "PlayerAnimationsId": "Item",
+  "IconProperties": {
+    "Scale": 0.58823,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -13.5
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Basic_Pipe"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Blocks_Wood"
+}
