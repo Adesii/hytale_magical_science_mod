@@ -52,7 +52,7 @@
     },
     "BlockParticleSetId": "Stone",
     "Material": "Solid",
-    "HitboxType": "Rail",
+    "HitboxType": "Basic_Pipe",
     "State": {
       "Definitions": {
         "Corner_Left": {
@@ -121,25 +121,15 @@
         },
         "Straight": {
           "CustomModel": "Blocks/Fluids/Pipes/Pipe_Straight.blockymodel"
-        }
+        },
+        "Corner_Full": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Corner_Full.blockymodel"
+        },
+        "Debug": "Debug_Block"
       }
     },
     "ParticleColor": "#828282",
     "BlockSoundSetId": "Metal",
-    "ConnectedBlockRuleSet": {
-      "Type": "CustomTemplate",
-      "TemplateShapeAssetId": "BasicPipeConnectedTemplate",
-      "TemplateShapeBlockPatterns": {
-        "Straight": "*Basic_Pipe_State_Definitions_Straight",
-        "Corner_Left": "*Basic_Pipe_State_Definitions_Corner_Left",
-        "Corner_Right": "*Basic_Pipe_State_Definitions_Corner_Right",
-        "TShape": "*Basic_Pipe_State_Definitions_T",
-        "Cross": "*Basic_Pipe_State_Definitions_Cross",
-        "None": "Basic_Pipe",
-        "Straight_One_Way": "*Basic_Pipe_State_Definitions_One_Way"
-      }
-    },
-    "VariantRotation": "All",
     "Supporting": {
       "North": [
         {
@@ -161,6 +151,13 @@
           "FaceType": "Basic_Pipe"
         }
       ]
+    },
+    "BlockEntity": {
+      "Components": {
+        "Pipe": {
+          "PipeState": 1
+        }
+      }
     }
   },
   "PlayerAnimationsId": "Item",

@@ -9,7 +9,7 @@ bin
 libs
 
 runserver
-
+run
 source_models
 
 .idea

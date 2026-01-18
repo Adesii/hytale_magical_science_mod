@@ -1,6 +1,7 @@
 
 package com.adesi.plugin;
 
+import com.adesi.plugin.components.pipes.PipeSystem;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.server.core.Message;
@@ -17,8 +18,11 @@ public class TestCommand extends AbstractPlayerCommand {
   }
 
   @Override
-  protected void execute(CommandContext arg0, Store<EntityStore> arg1, Ref<EntityStore> arg2, PlayerRef arg3,
-      World arg4) {
-    arg0.sendMessage(Message.raw("YO2222"));
+  protected void execute(CommandContext commandContext, Store<EntityStore> storeEntityStore,
+      Ref<EntityStore> refEntityStore, PlayerRef playerRef,
+      World world) {
+    PipeSystem.PlaceAmount += 1;
+
   }
+
 }

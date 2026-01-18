@@ -2,6 +2,7 @@ build:
 	./gradlew clean build
 
 run:
+	./gradlew clean build
 	cd runserver && \
 	java -jar ../libs/HytaleServer.jar --allow-op --disable-sentry \
 	-assets=/home/adesi/.var/app/com.hypixel.HytaleLauncher/data/Hytale/install/release/package/game/latest/Assets.zip \
