@@ -9,10 +9,13 @@ import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 
 public class UpdatePipeComponent implements Component<ChunkStore> {
 
+  private boolean hasUpdated = false;
+
   public UpdatePipeComponent() {
   }
 
   public UpdatePipeComponent(UpdatePipeComponent other) {
+    this.hasUpdated = other.hasUpdated;
   }
 
   @NullableDecl
@@ -23,6 +26,14 @@ public class UpdatePipeComponent implements Component<ChunkStore> {
 
   public static ComponentType<ChunkStore, UpdatePipeComponent> getComponentType() {
     return MSPlugin.get().getPipeUpdateType();
+  }
+
+  public boolean hasUpdated() {
+    return this.hasUpdated;
+  }
+
+  public void setHasUpdated(boolean updated) {
+    this.hasUpdated = updated;
   }
 
 }

@@ -6,6 +6,7 @@ import com.adesi.plugin.components.pipes.PipeComponent;
 import com.adesi.plugin.components.pipes.PipeSystem;
 import com.adesi.plugin.components.pipes.UpdatePipeComponent;
 import com.hypixel.hytale.component.ComponentType;
+import com.hypixel.hytale.logger.HytaleLogger.Api;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
@@ -46,6 +47,10 @@ public class MSPlugin extends JavaPlugin {
 
   public ComponentType<ChunkStore, UpdatePipeComponent> getPipeUpdateType() {
     return pipeUpdateType;
+  }
+
+  public static Api log() {
+    return get().getLogger().atInfo();
   }
 
 }

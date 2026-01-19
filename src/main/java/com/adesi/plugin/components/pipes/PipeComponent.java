@@ -83,8 +83,8 @@ public class PipeComponent implements Component<ChunkStore> {
   }
 
   public boolean isMatchingMask(int occupancymask) {
-    return (this.pipeState & occupancymask) == occupancymask; // check if all bits in the mask are set in
-                                                              // pipeState even if pipestate has more bits
+    return this.pipeState == occupancymask; // check if all bits in the mask are set in
+                                            // pipeState even if pipestate has more bits
   }
 
   public boolean hasDirectionalConnection(Vector3i direction) {

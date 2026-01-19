@@ -125,7 +125,17 @@
         "Corner_Full": {
           "CustomModel": "Blocks/Fluids/Pipes/Pipe_Corner_Full.blockymodel"
         },
-        "Debug": "Debug_Block"
+        "Debug": "Debug_Block",
+        "Cross_Extra": {
+          "DrawType": "Model",
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Extra_Cross.blockymodel"
+        },
+        "Full": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Full.blockymodel"
+        },
+        "Corner_Special": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Corner_Right.blockymodel"
+        }
       }
     },
     "ParticleColor": "#828282",
@@ -155,7 +165,7 @@
     "BlockEntity": {
       "Components": {
         "Pipe": {
-          "PipeState": 1
+          "PipeState": 0
         }
       }
     }
