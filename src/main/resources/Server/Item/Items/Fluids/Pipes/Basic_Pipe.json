@@ -40,7 +40,7 @@
     "CustomModel": "Blocks/Fluids/Pipes/Pipe_None.blockymodel",
     "CustomModelTexture": [
       {
-        "Texture": "Resources/Ores/Ore_Textures/Copper.png",
+        "Texture": "BlockTextures/Fluids/Pipes/Copper_Pipe.png",
         "Weight": 1
       }
     ],
@@ -50,7 +50,7 @@
         "GatherType": "SoftBlocks"
       }
     },
-    "BlockParticleSetId": "Stone",
+    "BlockParticleSetId": "Metal",
     "Material": "Solid",
     "HitboxType": "Basic_Pipe",
     "State": {
@@ -108,33 +108,41 @@
                 }
               }
             ]
-          }
+          },
+          "HitboxType": "Basic_Pipe_Elbow"
         },
         "Cross": {
-          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Cross.blockymodel"
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Cross.blockymodel",
+          "HitboxType": "Basic_Pipe_Cross"
         },
         "T": {
-          "CustomModel": "Blocks/Fluids/Pipes/Pipe_T.blockymodel"
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_T.blockymodel",
+          "HitboxType": "Basic_Pipe_T"
         },
         "One_Way": {
-          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Straight_One_Way.blockymodel"
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Straight_One_Way.blockymodel",
+          "HitboxType": "Basic_Pipe_One_Way"
         },
         "Straight": {
-          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Straight.blockymodel"
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Straight.blockymodel",
+          "HitboxType": "Basic_Pipe_Straight"
         },
         "Corner_Full": {
-          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Corner_Full.blockymodel"
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Corner_Full.blockymodel",
+          "HitboxType": "Basic_Pipe_Corner_Full"
         },
-        "Debug": "Debug_Block",
         "Cross_Extra": {
           "DrawType": "Model",
-          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Extra_Cross.blockymodel"
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Extra_Cross.blockymodel",
+          "HitboxType": "Basic_Pipe_Cross_Extra"
         },
         "Full": {
-          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Full.blockymodel"
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Full.blockymodel",
+          "HitboxType": "Basic_Pipe_Full"
         },
         "Corner_Special": {
-          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Corner_Right.blockymodel"
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Corner_Special.blockymodel",
+          "HitboxType": "Basic_Pipe_Corner_Special"
         }
       }
     },

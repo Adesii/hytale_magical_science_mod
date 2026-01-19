@@ -10,7 +10,7 @@ import org.gradle.api.tasks.JavaExec
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     `maven-publish`
-    id("hytale-mod") version "0.4.3-alpha"
+    id("hytale-mod") version "0.5.1-alpha"
 }
 
 group = "com.adesi"
@@ -40,29 +40,6 @@ dependencies {
         logger.warn("Hytale Assets.zip not found at: ${hytaleAssets.absolutePath}")
     }
 }
-// tasks.named<Jar>("jar") {
-//     destinationDirectory.set(file("/home/adesi/.var/app/com.hypixel.HytaleLauncher/data/Hytale/UserData/Mods"))
-// }
-//
-// tasks.register<JavaExec>("decompileServer") {
-//     group = "hytale"
-//     description = "Decompile HytaleServer.jar into a sources zip"
-//
-//     val serverJar = file("libs/HytaleServer.jar")
-//     val sourcesZip = file("libs/HytaleServer-sources.zip")
-//
-//     workingDir = temporaryDir
-//     mainClass.set("org.jetbrains.java.decompiler.main.decompiler.ConsoleDecompiler")
-//     classpath = vineFlowerDependencies
-//
-//     args(
-//         serverJar.absolutePath,
-//         sourcesZip.absolutePath,
-//     )
-//
-//     inputs.file(serverJar)
-//     outputs.file(sourcesZip)
-// }
 
 java {
     toolchain {
@@ -72,32 +49,11 @@ java {
     withSourcesJar()
 }
 
-tasks.named<ProcessResources>("processResources") {
-    var replaceProperties =
-        mapOf(
-            "plugin_group" to findProperty("plugin_group"),
-            "plugin_maven_group" to project.group,
-            "plugin_name" to projectname,
-            "plugin_version" to project.version,
-            "server_version" to findProperty("server_version"),
-            "plugin_description" to findProperty("plugin_description"),
-            "plugin_website" to findProperty("plugin_website"),
-            "plugin_main_entrypoint" to findProperty("plugin_main_entrypoint"),
-            "plugin_author" to findProperty("plugin_author"),
-        )
 
-    filesMatching("manifest.json") {
-        expand(replaceProperties)
-    }
 
-    inputs.properties(replaceProperties)
-
-    exclude("Server")
-    exclude("Common")
-
-}
 
 hytale {
+    programArgs.add("--mods="+layout.projectDirectory.dir("src/main/").asFile.absolutePath)
 }
 
 tasks.withType<Jar> {
@@ -133,37 +89,3 @@ idea {
         isDownloadJavadoc = true
     }
 }
-//
-// val syncAssets =
-//     tasks.register<Copy>("syncAssets") {
-//         group = "hytale"
-//         description = "Automatically syncs assets from Build back to Source after server stops."
-//
-//         // Take from the temporary build folder (Where the game saved changes)
-//         from(layout.buildDirectory.dir("resources/main"))
-//
-//         // Copy into your actual project source (Where your code lives)
-//         into("src/main/resources")
-//
-//         // IMPORTANT: Protect the manifest template from being overwritten
-//         exclude("manifest.json")
-//
-//         // If a file exists, overwrite it with the new version from the game
-//         duplicatesStrategy = DuplicatesStrategy.INCLUDE
-//
-//         doLast {
-//             println("✅ Assets successfully synced from Game to Source Code!")
-//         }
-//     }
-//
-// afterEvaluate {
-//     // Now Gradle will find it, because the plugin has finished working
-//     val targetTask = tasks.findByName("runServer") ?: tasks.findByName("server")
-//
-//     if (targetTask != null) {
-//         targetTask.finalizedBy(syncAssets)
-//         logger.lifecycle("✅ specific task '${targetTask.name}' hooked for auto-sync.")
-//     } else {
-//         logger.warn("⚠️ Could not find 'runServer' or 'server' task to hook auto-sync into.")
-//     }
-// }

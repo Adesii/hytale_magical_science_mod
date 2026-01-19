@@ -1,9 +1,12 @@
 package com.adesi.plugin.components.pipes;
 
+import java.awt.List;
 import java.awt.color.CMMException;
 import java.nio.channels.Pipe;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -33,6 +36,7 @@ import com.hypixel.hytale.math.Axis;
 import com.hypixel.hytale.math.util.ChunkUtil;
 import com.hypixel.hytale.math.util.MathUtil;
 import com.hypixel.hytale.math.vector.Vector3i;
+import com.hypixel.hytale.protocol.packets.world.RotationAxis;
 import com.hypixel.hytale.protocol.packets.world.RotationDirection;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.Rotation;
@@ -54,48 +58,41 @@ public class PipeSystem {
   public record PipeArrangement(RotationTuple rotation, String state) {
   }
 
-  static final Vector3i UP = new Vector3i(0, 1, 0);
-  static final Vector3i DOWN = new Vector3i(0, -1, 0);
-  static final Vector3i FORWARD = new Vector3i(0, 0, -1);
-  static final Vector3i BACKWARD = new Vector3i(0, 0, 1);
-  static final Vector3i LEFT = new Vector3i(-1, 0, 0);
-  static final Vector3i RIGHT = new Vector3i(1, 0, 0);
-
   static final Vector3i[] CANONICAL_ONE_WAY = {
-      BACKWARD
+      Vector3i.FORWARD
   };
 
   static final Vector3i[] CANONICAL_STRAIGHT = {
-      BACKWARD, FORWARD
+      Vector3i.FORWARD, Vector3i.BACKWARD
   };
 
   static final Vector3i[] CANONICAL_ELBOW = {
-      BACKWARD, LEFT
+      Vector3i.FORWARD, Vector3i.RIGHT
   };
 
   static final Vector3i[] CANONICAL_T = {
-      BACKWARD, RIGHT, LEFT
+      Vector3i.LEFT, Vector3i.RIGHT, Vector3i.FORWARD
   };
 
   static final Vector3i[] CANONICAL_CORNERS = {
-      BACKWARD, LEFT, UP
+      Vector3i.LEFT, Vector3i.FORWARD, Vector3i.UP
   };
 
   static final Vector3i[] CANONICAL_CROSS = {
-      BACKWARD, FORWARD, LEFT, RIGHT
+      Vector3i.FORWARD, Vector3i.RIGHT, Vector3i.BACKWARD, Vector3i.LEFT
   };
   static final Vector3i[] CANONICAL_EXTRA_CROSS = {
-      BACKWARD, FORWARD, LEFT, RIGHT, UP
+      Vector3i.FORWARD, Vector3i.RIGHT, Vector3i.BACKWARD, Vector3i.LEFT, Vector3i.UP
   };
 
   static final Vector3i[] CANONICAL_SPECIAL_CORNER = {
-      BACKWARD, FORWARD, LEFT, UP
+      Vector3i.LEFT, Vector3i.FORWARD, Vector3i.RIGHT, Vector3i.UP
   };
 
   static Axis axisOf(Vector3i v) {
-    if (v.equals(UP) || v.equals(DOWN))
+    if (v.equals(Vector3i.UP) || v.equals(Vector3i.DOWN))
       return Axis.Y;
-    if (v.equals(LEFT) || v.equals(RIGHT))
+    if (v.equals(Vector3i.LEFT) || v.equals(Vector3i.RIGHT))
       return Axis.X;
     return Axis.Z;
   }
@@ -111,26 +108,75 @@ public class PipeSystem {
     return set;
   }
 
+  static final Map<Set<Vector3i>, RotationTuple> manualOverride = new HashMap<>();
+  static {
+    // T Overrides
+    manualOverride.put(Set.of(Vector3i.UP, Vector3i.RIGHT, Vector3i.DOWN),
+        RotationTuple.of(Rotation.TwoSeventy, Rotation.None, Rotation.Ninety));
+    manualOverride.put(Set.of(Vector3i.UP, Vector3i.LEFT, Vector3i.DOWN),
+        RotationTuple.of(Rotation.Ninety, Rotation.None, Rotation.Ninety));
+    // SpecialCorner Overrides
+    manualOverride.put(Set.of(Vector3i.UP, Vector3i.RIGHT, Vector3i.DOWN, Vector3i.BACKWARD),
+        RotationTuple.of(Rotation.None, Rotation.OneEighty, Rotation.TwoSeventy));
+    manualOverride.put(Set.of(Vector3i.UP, Vector3i.LEFT, Vector3i.DOWN, Vector3i.BACKWARD),
+        RotationTuple.of(Rotation.TwoSeventy, Rotation.OneEighty, Rotation.TwoSeventy));
+  }
+
+  static boolean isValidRotation(RotationTuple rotation, Vector3i[] canonical, Set<Vector3i> actual) {
+    Set<Vector3i> rotated = new HashSet<>();
+    for (Vector3i v : canonical) {
+      rotated.add(Rotation.rotate(new Vector3i(v), rotation.yaw(), rotation.pitch(), rotation.roll()));
+    }
+
+    // Quick check: vector sets match
+    if (!rotated.equals(actual))
+      return false;
+
+    // Manual override check: ensure arms align physically
+    // For example:
+    for (Vector3i arm : rotated) {
+      if (!actual.contains(arm))
+        return false;
+
+    }
+    // Optional: check orientation of specific arms (like the "stem" of T)
+    // e.g., primary forward must map to primary forward in the world
+    // This handles ambiguous rotations
+    return true;
+  }
+
   static RotationTuple findRotation(Vector3i[] canonical, Set<Vector3i> actual) {
-
-    for (Rotation yaw : Rotation.values()) {
-      for (Rotation pitch : Rotation.values()) {
-
-        Rotation roll = Rotation.None; // CRITICAL
-
-        Set<Vector3i> rotated = new HashSet<>();
-        for (Vector3i v : canonical) {
-          Vector3i r = Rotation.rotate(new Vector3i(v), yaw, pitch, roll);
-          rotated.add(r);
-        }
-
-        if (rotated.equals(actual)) {
-          return RotationTuple.of(yaw, pitch, roll);
+    if (manualOverride.containsKey(actual)) {
+      return manualOverride.get(actual);
+    }
+    for (Rotation yaw : Rotation.VALUES) {
+      for (Rotation pitch : Rotation.VALUES) {
+        Rotation roll = Rotation.None;
+        RotationTuple candidate = RotationTuple.of(yaw, pitch, roll);
+        if (isValidRotation(candidate, canonical, actual)) {
+          return candidate;
         }
       }
     }
-
-    throw new IllegalStateException("No valid rotation found for " + actual);
+    for (Rotation yaw : Rotation.VALUES) {
+      for (Rotation roll : Rotation.VALUES) {
+        Rotation pitch = Rotation.None;
+        RotationTuple candidate = RotationTuple.of(yaw, pitch, roll);
+        if (isValidRotation(candidate, canonical, actual)) {
+          return candidate;
+        }
+      }
+    }
+    for (Rotation pitch : Rotation.VALUES) {
+      for (Rotation roll : Rotation.VALUES) {
+        Rotation yaw = Rotation.None;
+        RotationTuple candidate = RotationTuple.of(yaw, pitch, roll);
+        if (isValidRotation(candidate, canonical, actual)) {
+          return candidate;
+        }
+      }
+    }
+    return null;
   }
 
   static boolean isElbow(Set<Vector3i> dirs) {
@@ -139,12 +185,8 @@ public class PipeSystem {
     Vector3i b = it.next();
 
     if (a.equals(new Vector3i(b).negate())) {
-
-      // MSPlugin.log().log("Didn't find elbow: " + a + ", " + b);
       return false;
     }
-    // MSPlugin.log().log("Found elbow: " + a + ", " + b + " axis a: " + axisOf(a) +
-    // " axis b: " + axisOf(b));
     return axisOf(a) != axisOf(b);
   }
 
@@ -233,28 +275,22 @@ public class PipeSystem {
     }
 
     if (count == 1) {
-      RotationTuple rot = findRotation(CANONICAL_ONE_WAY, dirs);
-      return new PipeArrangement(rot, "One_Way");
+      return new PipeArrangement(findRotation(CANONICAL_ONE_WAY, dirs), "One_Way");
     }
 
     if (count == 2) {
       if (isStraight(dirs)) {
-        RotationTuple rot = findRotation(CANONICAL_STRAIGHT, dirs);
-        return new PipeArrangement(rot, "Straight");
+        return new PipeArrangement(findRotation(CANONICAL_STRAIGHT, dirs), "Straight");
       }
       if (isElbow(dirs)) {
-        RotationTuple rot = findRotation(CANONICAL_ELBOW, dirs);
-        return new PipeArrangement(rot, "Corner_Left");
+        return new PipeArrangement(findRotation(CANONICAL_ELBOW, dirs), "Corner_Left");
       }
-      // MSPlugin.log().log(" Invalid arrangement of two pipes. Expected straight or
-      // elbow.");
       return invalid();
     }
 
     if (count == 3) {
       if (isT(dirs)) {
-        RotationTuple rot = findRotation(CANONICAL_T, dirs);
-        return new PipeArrangement(rot, "T");
+        return new PipeArrangement(findRotation(CANONICAL_T, dirs), "T");
       }
       if (isCorner(dirs)) {
         return new PipeArrangement(findRotation(CANONICAL_CORNERS, dirs), "Corner_Full");
@@ -265,13 +301,10 @@ public class PipeSystem {
 
     if (count == 4) {
       if (isCross(dirs)) {
-        MSPlugin.log().log("Found a cross!");
         return new PipeArrangement(findRotation(CANONICAL_CROSS, dirs), "Cross");
       }
       if (isSpecialCorner(dirs)) {
-        MSPlugin.log().log("Found a SpecialCorner!");
-        RotationTuple rot = findRotation(CANONICAL_SPECIAL_CORNER, dirs);
-        return new PipeArrangement(rot, "Straight");
+        return new PipeArrangement(findRotation(CANONICAL_SPECIAL_CORNER, dirs), "Corner_Special");
       }
     }
 
@@ -295,7 +328,6 @@ public class PipeSystem {
 
     private final ComponentType<ChunkStore, UpdatePipeComponent> componentType;
     private final ComponentType<ChunkStore, PipeComponent> pipeComponent;
-    private final Query<ChunkStore> query;
 
     public PipeChangeUpdater(ComponentType<ChunkStore, UpdatePipeComponent> componentType,
         ComponentType<ChunkStore, PipeComponent> pipeComponent) {
@@ -428,15 +460,13 @@ public class PipeSystem {
             int y = ChunkUtil.yFromBlockInColumn(blockstate.getIndex());
             int z = ChunkUtil.worldCoordFromLocalCoord(blockchunk.getZ(),
                 ChunkUtil.zFromBlockInColumn(blockstate.getIndex()));
-            MSPlugin.get().getLogger().at(Level.INFO).log("Pipe is at:" + " " + x + " " +
-                y + " " + z);
+            // MSPlugin.get().getLogger().at(Level.INFO).log("Pipe is at:" + " " + x + " " +
+            // y + " " + z);
             int occupiedMask = 0;
             var world = storeChunkStore.getExternalData().getWorld();
             int iterationIndex = -1;
             var pipeComponent = storeChunkStore.getComponent(refChunkStore, PipeComponent.getComponentType());
-            var wc = world.getChunk(ChunkUtil.indexChunkFromBlock(x, z));
-            var localX = ChunkUtil.xFromBlockInColumn(blockstate.getIndex());
-            var localZ = ChunkUtil.zFromBlockInColumn(blockstate.getIndex());
+
             var neighbours = new ArrayList<Vector3i>();
             for (var dir : Vector3i.BLOCK_SIDES) {
               var currentX = x + dir.x;

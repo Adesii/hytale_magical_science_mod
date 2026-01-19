@@ -1,11 +1,11 @@
 {
-	"Group": "${plugin_group}",
-	"Name": "${plugin_name}",
-	"Version": "${plugin_version}",
-	"Description": "${plugin_description}",
-	"Authors": [{ "name": "${plugin_author}" }],
-	"ServerVersion": "${server_version}",
-	"Main": "${plugin_main_entrypoint}",
+	"Group": "Adesi",
+	"Name": "MagicalScience",
+	"Version": "0.1-SNAPSHOT",
+	"Description": "A Mod that adds Magical Science to Hytale!",
+	"Authors": [{ "name": "Adesi" }],
+	"ServerVersion": "*",
+	"Main": "com.adesi.plugin.MSPlugin",
 	"DisabledByDefault": false,
 	"IncludesAssetPack": true
 }
