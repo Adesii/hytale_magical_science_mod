@@ -1,23 +1,14 @@
 package com.adesi.plugin.components.pipes;
 
-import java.awt.List;
-import java.awt.color.CMMException;
-import java.nio.channels.Pipe;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.EnumMap;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 import com.adesi.plugin.MSPlugin;
-import com.hypixel.hytale.builtin.hytalegenerator.fields.FastNoiseLite.RotationType3D;
 import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.ArchetypeChunk;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -25,34 +16,21 @@ import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.component.Ref;
 import com.hypixel.hytale.component.RemoveReason;
 import com.hypixel.hytale.component.Store;
-import com.hypixel.hytale.component.dependency.Dependency;
-import com.hypixel.hytale.component.dependency.Order;
-import com.hypixel.hytale.component.dependency.SystemDependency;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefChangeSystem;
 import com.hypixel.hytale.component.system.RefSystem;
 import com.hypixel.hytale.component.system.tick.EntityTickingSystem;
 import com.hypixel.hytale.math.Axis;
 import com.hypixel.hytale.math.util.ChunkUtil;
-import com.hypixel.hytale.math.util.MathUtil;
 import com.hypixel.hytale.math.vector.Vector3i;
-import com.hypixel.hytale.protocol.packets.world.RotationAxis;
-import com.hypixel.hytale.protocol.packets.world.RotationDirection;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.Rotation;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.RotationTuple;
-import com.hypixel.hytale.server.core.asset.type.model.config.Model.ModelReference;
 import com.hypixel.hytale.server.core.modules.block.BlockModule.BlockStateInfo;
-import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
-import com.hypixel.hytale.server.core.modules.entityui.UIComponentSystems.Update;
 import com.hypixel.hytale.server.core.universe.world.chunk.BlockChunk;
-import com.hypixel.hytale.server.core.universe.world.chunk.BlockComponentChunk;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
-import com.hypixel.hytale.server.core.universe.world.chunk.section.BlockSection;
-import com.hypixel.hytale.server.core.universe.world.connectedblocks.Rotation3D;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 
-import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 
 public class PipeSystem {
   public record PipeArrangement(RotationTuple rotation, String state) {
