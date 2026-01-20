@@ -109,6 +109,7 @@ public class PipeSystem {
   }
 
   static final Map<Set<Vector3i>, RotationTuple> manualOverride = new HashMap<>();
+
   static {
     // T Overrides
     manualOverride.put(Set.of(Vector3i.UP, Vector3i.RIGHT, Vector3i.DOWN),
@@ -229,10 +230,7 @@ public class PipeSystem {
         return false;
       }
     }
-    if (!has_two_common || !has_atleast_one) {
-      return false;
-    }
-    return true;
+    return has_two_common && has_atleast_one;
   }
 
   static boolean isStraight(Set<Vector3i> dirs) {
