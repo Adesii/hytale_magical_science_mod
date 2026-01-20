@@ -328,17 +328,18 @@ public class PipeSystem {
 
     private final ComponentType<ChunkStore, UpdatePipeComponent> componentType;
     private final ComponentType<ChunkStore, PipeComponent> pipeComponent;
+    private final Query<ChunkStore> query;
 
     public PipeChangeUpdater(ComponentType<ChunkStore, UpdatePipeComponent> componentType,
         ComponentType<ChunkStore, PipeComponent> pipeComponent) {
       this.componentType = componentType;
       this.pipeComponent = pipeComponent;
-      this.query = Query.and(this.componentType, pipeComponent);
+      this.query = Query.and(this.componentType, this.pipeComponent);
     }
 
     @Override
     public Query<ChunkStore> getQuery() {
-      return Query.and(componentType, pipeComponent);
+      return query;
     }
 
     @Override
