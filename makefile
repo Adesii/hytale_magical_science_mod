@@ -1,6 +1,8 @@
 build:
 	./gradlew clean build
 
+server:
+	./gradlew runServer
 run:
 	./gradlew clean build
 	cd runserver && \

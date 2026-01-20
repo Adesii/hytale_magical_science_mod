@@ -2,12 +2,14 @@ package com.adesi.plugin;
 
 import java.util.logging.Level;
 
+import com.adesi.plugin.Interactions.Tools.ToolWrenchInteraction;
 import com.adesi.plugin.components.pipes.PipeComponent;
 import com.adesi.plugin.components.pipes.PipeSystem;
 import com.adesi.plugin.components.pipes.UpdatePipeComponent;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.logger.HytaleLogger.Api;
 import com.hypixel.hytale.server.core.modules.entity.component.TransformComponent;
+import com.hypixel.hytale.server.core.modules.interaction.interaction.config.Interaction;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
@@ -38,7 +40,9 @@ public class MSPlugin extends JavaPlugin {
         UpdatePipeComponent::new);
     this.getChunkStoreRegistry().registerSystem(new PipeSystem.PipeRefSystem());
     this.getChunkStoreRegistry().registerSystem(new PipeSystem.PipeChangeUpdater(this.pipeUpdateType, this.pipeType));
+    this.getChunkStoreRegistry().registerSystem(new PipeSystem.PipeChangeSystem());
     this.getLogger().at(Level.INFO).log("Registed Magical Science Plugin!");
+    Interaction.CODEC.register("UseWrench", ToolWrenchInteraction.class, ToolWrenchInteraction.CODEC);
   }
 
   public ComponentType<ChunkStore, PipeComponent> getPipeType() {
@@ -49,7 +53,7 @@ public class MSPlugin extends JavaPlugin {
     return pipeUpdateType;
   }
 
-  public static Api log() {
+  public static Api getLog() {
     return get().getLogger().atInfo();
   }
 

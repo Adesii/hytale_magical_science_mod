@@ -347,8 +347,8 @@ public class PipeSystem {
 
       PipeComponent pipe = archetypeChunkChunkStore.getComponent(index, PipeComponent.getComponentType());
       var ref = archetypeChunkChunkStore.getReferenceTo(index);
-      // MSPlugin.get().getLogger().at(Level.INFO).log("Added ChunkStore to Entity: "
-      // + ref.toString());
+      MSPlugin.get().getLogger().at(Level.INFO).log("Added ChunkStore to Entity: "
+          + ref.toString());
 
       var blockstate = storeChunkStore.getComponent(ref,
           BlockStateInfo.getComponentType());
@@ -373,8 +373,8 @@ public class PipeSystem {
           var holder = chunkrefforblock.getBlockComponentHolder(currentX, currentY, currentZ);
           var entity = chunkrefforblock.getBlockComponentEntity(currentX, currentY, currentZ);
           if (holder != null) {
-            var neighbourPipe = commandBufferChunkStore.getComponent(entity, PipeComponent.getComponentType());
-            if (neighbourPipe != null) {
+            var neighbourPipe = storeChunkStore.getComponent(entity, PipeComponent.getComponentType());
+            if (neighbourPipe != null && neighbourPipe.canConnectTo(dir)) {
               occupiedMask |= 1 << iterationIndex;
             }
           }
@@ -392,16 +392,21 @@ public class PipeSystem {
       var oldstate = getPipeArrangement(pipe.getPipeState());
       pipe.setDirectionalState(
           occupiedMask);
+      MSPlugin.getLog().log("bleh" + pipe.toString());
       PipeArrangement pa = getPipeArrangement(pipe.getPipeState());
 
-      if (oldstate.state == pa.state && oldstate.rotation.equals(pa.rotation)) {
-        commandBufferChunkStore.removeComponent(ref, UpdatePipeComponent.getComponentType());
-        return;
-      }
+      MSPlugin.getLog().log(pa.state + " " + oldstate.state);
       BlockType blockType = BlockType.getAssetMap()
           .getAsset(blockchunk.getBlock(ChunkUtil.xFromBlockInColumn(blockstate.getIndex()),
               y,
               ChunkUtil.zFromBlockInColumn(blockstate.getIndex())));
+      var currentstate = blockType.getState().getStateForBlock(blockType.getId());
+      MSPlugin.getLog().log(currentstate + " " + pa.state);
+      if (oldstate.state == pa.state && oldstate.rotation.equals(pa.rotation)
+          && currentstate == pa.state) {
+        commandBufferChunkStore.removeComponent(ref, UpdatePipeComponent.getComponentType());
+        return;
+      }
 
       // MSPlugin.get().getLogger().at(Level.INFO).log("Setting block update at: " + x
       // + "," + y + "," + z + ", " +
@@ -413,17 +418,119 @@ public class PipeSystem {
             WorldChunk.getComponentType());
         var newblockstate = blockType.getBlockForState(pa.state);
         if (newblockstate == null) {
-
           newblockstate = blockType;
+        }
+        MSPlugin.getLog()
+            .log("Setting block update at: " + x + y + z + ", " + pa.rotation + " to state:" + newblockstate.getId()
+                + "  " + pipe.toString());
+        var oldstatess = wc2.getBlockType(x, y, z).getId();
+        if (oldstatess == newblockstate.getId()) {
+          MSPlugin.getLog()
+              .log("No change in state: " + oldstatess + " to " + newblockstate.getId());
+          _store.removeComponent(ref, UpdatePipeComponent.getComponentType());
+          return;
         }
         wc2.setBlock(x, y, z,
             BlockType.getAssetMap().getIndex(newblockstate.getId()), newblockstate,
-            pa.rotation.index(), 0, 0);
+            pa.rotation.index(), 0, 2);
         // wc2.setBlockInteractionState(x, y, z, blockType, pa.state, true);
+        var entity = wc2.getBlockComponentEntity(x, y, z);
+        if (entity == null) {
+          MSPlugin.getLog().log("Block has no componentholder!");
+          return;
+        }
+        var entitystore = entity.getStore();
+        var npipe = entitystore.getComponent(entity, PipeComponent.getComponentType());
+        npipe.updateFrom(pipe);
+        MSPlugin.getLog().log("       END OF UPDATE    " + npipe.toString());
 
       });
     }
 
+  }
+
+  public static class PipeChangeSystem extends RefChangeSystem<ChunkStore, PipeComponent> {
+    public static final ComponentType<ChunkStore, PipeComponent> COMPONENT_TYPE = PipeComponent.getComponentType();
+
+    @Override
+    public Query<ChunkStore> getQuery() {
+      return Query.and(COMPONENT_TYPE);
+    }
+
+    @Override
+    public ComponentType<ChunkStore, PipeComponent> componentType() {
+      return COMPONENT_TYPE;
+    }
+
+    @Override
+    public void onComponentAdded(Ref<ChunkStore> arg0, PipeComponent arg1, Store<ChunkStore> arg2,
+        CommandBuffer<ChunkStore> arg3) {
+
+    }
+
+    @Override
+    public void onComponentRemoved(Ref<ChunkStore> arg0, PipeComponent arg1, Store<ChunkStore> arg2,
+        CommandBuffer<ChunkStore> arg3) {
+
+    }
+
+    @Override
+    public void onComponentSet(Ref<ChunkStore> refChunkStore, PipeComponent pipeComponent, PipeComponent pipeComponent2,
+        Store<ChunkStore> storeChunkStore,
+        CommandBuffer<ChunkStore> commandBufferChunkStore) {
+
+      MSPlugin.getLog().log("Setting component " + pipeComponent.toString() + " TO" + pipeComponent2.toString());
+
+      var blockstate = storeChunkStore.getComponent(refChunkStore, BlockStateInfo.getComponentType());
+      var chunkref = blockstate.getChunkRef();
+      if (chunkref == null || !chunkref.isValid()) {
+        return;
+      }
+      var blockchunk = storeChunkStore.getComponent(chunkref, BlockChunk.getComponentType());
+      int x = ChunkUtil.worldCoordFromLocalCoord(blockchunk.getX(),
+          ChunkUtil.xFromBlockInColumn(blockstate.getIndex()));
+      int y = ChunkUtil.yFromBlockInColumn(blockstate.getIndex());
+      int z = ChunkUtil.worldCoordFromLocalCoord(blockchunk.getZ(),
+          ChunkUtil.zFromBlockInColumn(blockstate.getIndex()));
+
+      var test = getPipeArrangement(pipeComponent2.getPipeState());
+      BlockType blockType = BlockType.getAssetMap()
+          .getAsset(blockchunk.getBlock(ChunkUtil.xFromBlockInColumn(blockstate.getIndex()), y,
+              ChunkUtil.zFromBlockInColumn(blockstate.getIndex())));
+
+      if (blockType != null) {
+        commandBufferChunkStore.run(_store -> {
+          WorldChunk wc2 = _store.getComponent(chunkref, WorldChunk.getComponentType());
+          PipeArrangement pa = test;
+          var newblockstate = blockType.getBlockForState(pa.state);
+          MSPlugin.getLog()
+              .log("Setting bloc at: " + x + y + z + ", " + pa.rotation + " to state:"
+                  + newblockstate.getId() + "  " + pipeComponent.toString());
+          wc2.setBlock(x, y, z,
+              BlockType.getAssetMap().getIndex(newblockstate.getId()), newblockstate,
+              pa.rotation.index(), 0, 2);
+        });
+        var world = storeChunkStore.getExternalData().getWorld();
+        for (var dir : Vector3i.BLOCK_SIDES) {
+          var currentX = x + dir.x;
+          var currentY = y + dir.y;
+          var currentZ = z + dir.z;
+          var chunkfor = ChunkUtil.indexChunkFromBlock(currentX, currentZ);
+          var chunkrefforblock = world.getChunk(chunkfor);
+          if (chunkrefforblock != null) {
+            var holder = chunkrefforblock.getBlockComponentHolder(currentX, currentY, currentZ);
+            var entity = chunkrefforblock.getBlockComponentEntity(currentX, currentY, currentZ);
+            if (holder != null) {
+              var neighbourPipe = storeChunkStore.getComponent(entity, PipeComponent.getComponentType());
+              if (neighbourPipe != null) {
+                commandBufferChunkStore.ensureComponent(entity, UpdatePipeComponent.getComponentType());
+              }
+            }
+          }
+        }
+      }
+
+    }
   }
 
   public static class PipeRefSystem extends RefSystem<ChunkStore> {
@@ -441,19 +548,11 @@ public class PipeSystem {
 
       switch (addReason) {
         case SPAWN:
-          if (storeChunkStore.getComponent(refChunkStore, UpdatePipeComponent.getComponentType()) != null
-              || commandBufferChunkStore.getComponent(refChunkStore, UpdatePipeComponent.getComponentType()) != null) {
-            return;
-          }
-          // TODO: do proper pipe validation and replacement. only on spawn since loading
-          // should already have the right one
-          // MSPlugin.get().getLogger().at(Level.INFO)
-          // .log("Added Entity: " +
-          // commandBufferChunkStore.getArchetype(refChunkStore).toString());
-          var blockstate = storeChunkStore.getComponent(refChunkStore, BlockStateInfo.getComponentType());
+
+          var blockstate = commandBufferChunkStore.getComponent(refChunkStore, BlockStateInfo.getComponentType());
           var chunkref = blockstate.getChunkRef();
           if (chunkref != null && chunkref.isValid()) {
-            var blockchunk = storeChunkStore.getComponent(chunkref, BlockChunk.getComponentType());
+            var blockchunk = commandBufferChunkStore.getComponent(chunkref, BlockChunk.getComponentType());
             int x = ChunkUtil.worldCoordFromLocalCoord(blockchunk.getX(),
                 ChunkUtil.xFromBlockInColumn(blockstate.getIndex()));
             int y = ChunkUtil.yFromBlockInColumn(blockstate.getIndex());
@@ -462,7 +561,7 @@ public class PipeSystem {
             // MSPlugin.get().getLogger().at(Level.INFO).log("Pipe is at:" + " " + x + " " +
             // y + " " + z);
             int occupiedMask = 0;
-            var world = storeChunkStore.getExternalData().getWorld();
+            var world = commandBufferChunkStore.getExternalData().getWorld();
             int iterationIndex = -1;
             var pipeComponent = storeChunkStore.getComponent(refChunkStore, PipeComponent.getComponentType());
 
@@ -478,8 +577,9 @@ public class PipeSystem {
                 var holder = chunkrefforblock.getBlockComponentHolder(currentX, currentY, currentZ);
                 var entity = chunkrefforblock.getBlockComponentEntity(currentX, currentY, currentZ);
                 if (holder != null) {
-                  var neighbourPipe = storeChunkStore.getComponent(entity, PipeComponent.getComponentType());
-                  if (neighbourPipe != null) {
+                  var neighbourPipe = commandBufferChunkStore.getComponent(entity, PipeComponent.getComponentType());
+                  if (neighbourPipe != null && neighbourPipe.canConnectTo(dir)) {
+
                     occupiedMask |= 1 << iterationIndex;
                     neighbours.add(dir);
                   }
@@ -487,9 +587,11 @@ public class PipeSystem {
               }
             }
             if (pipeComponent != null && !pipeComponent.isMatchingMask(occupiedMask)) {
+              MSPlugin.getLog().log(" before set" + pipeComponent.toString());
               pipeComponent.setDirectionalState(occupiedMask);
               pipeComponent.setPipeState(occupiedMask);
               var test = getPipeArrangement(pipeComponent.getPipeState());
+              MSPlugin.getLog().log(" after set" + pipeComponent.toString() + "  new state" + test.state);
               BlockType blockType = BlockType.getAssetMap()
                   .getAsset(blockchunk.getBlock(ChunkUtil.xFromBlockInColumn(blockstate.getIndex()), y,
                       ChunkUtil.zFromBlockInColumn(blockstate.getIndex())));
@@ -522,15 +624,17 @@ public class PipeSystem {
                         // + neighbourPipe);
                         var entity = chunkrefforblock.getBlockComponentEntity(currentX, currentY, currentZ);
                         if (neighbourPipe != null) {
-                          if (_store.getComponent(entity, UpdatePipeComponent.getComponentType()) == null)
-                            _store.addComponent(entity, UpdatePipeComponent.getComponentType());
+                          _store.ensureComponent(entity, UpdatePipeComponent.getComponentType());
                         }
                       }
                     }
                   }
+                  MSPlugin.getLog()
+                      .log("Setting bloc at: " + x + y + z + ", " + pa.rotation + " to state:"
+                          + newblockstate.getId() + "  " + pipeComponent.toString());
                   wc2.setBlock(x, y, z,
                       BlockType.getAssetMap().getIndex(newblockstate.getId()), newblockstate,
-                      pa.rotation.index(), 0, 198);
+                      pa.rotation.index(), 0, 2);
                 });
               }
 
@@ -551,6 +655,10 @@ public class PipeSystem {
         Store<ChunkStore> storeChunkStore,
         CommandBuffer<ChunkStore> commandBufferChunkStore) {
       if (removeReason != RemoveReason.REMOVE) {
+        return;
+      }
+      if (storeChunkStore.getComponent(refChunkStore, UpdatePipeComponent.getComponentType()) != null
+          || commandBufferChunkStore.getComponent(refChunkStore, UpdatePipeComponent.getComponentType()) != null) {
         return;
       }
 
@@ -576,9 +684,9 @@ public class PipeSystem {
             var entity = chunkrefforblock.getBlockComponentEntity(currentX, currentY, currentZ);
             if (holder != null) {
               var neighbourPipe = storeChunkStore.getComponent(entity, PipeComponent.getComponentType());
-              if (neighbourPipe != null) {
+              if (neighbourPipe != null && neighbourPipe.canConnectTo(dir)) {
                 commandBufferChunkStore.run(_store -> {
-                  _store.addComponent(entity, UpdatePipeComponent.getComponentType());
+                  _store.ensureComponent(entity, UpdatePipeComponent.getComponentType());
                 });
               }
             }

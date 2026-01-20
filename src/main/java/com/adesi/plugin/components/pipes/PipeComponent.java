@@ -1,5 +1,6 @@
 package com.adesi.plugin.components.pipes;
 
+import java.nio.channels.Pipe;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,48 +26,95 @@ public class PipeComponent implements Component<ChunkStore> {
   public static final BuilderCodec<PipeComponent> CODEC = BuilderCodec.builder(PipeComponent.class, PipeComponent::new)
       .append(new KeyedCodec<>("PipeState", Codec.INTEGER), (o, state) -> o.pipeState = state, o -> o.pipeState)
       .addValidator(Validators.greaterThanOrEqual((int) 0))
+      .add()
+      .append(new KeyedCodec<>("BlockedPipeState", Codec.INTEGER), (o, state) -> o.blockPipeState = state,
+          o -> o.blockPipeState)
+      .addValidator(Validators.greaterThanOrEqual((int) 0))
       .add().build();
   // bitmask for pipe state for each direction including up and down, 6 bits for
   // current state and 6 bits for masking so the player can remove certain
   // connections.
   private int pipeState;
+  private int blockPipeState; // bitmask for directions that are manually blocked off. like when using a
+                              // wrench.
 
   public PipeComponent() {
-    this(0); // default to no connections.
+    this(0, 0); // default to no connections.
   }
 
   public PipeComponent(PipeComponent other) {
     pipeState = other.pipeState; // copy the state.
+    blockPipeState = other.blockPipeState; // copy the blocked state.
   }
 
-  public PipeComponent(int pipeState) {
+  public PipeComponent(int pipeState, int blockedState) {
     this.pipeState = pipeState;
+    blockPipeState = blockedState; // no directions blocked by default.
   }
 
   public int getPipeState() {
-    return this.pipeState;
+    return this.pipeState & ~blockPipeState; // mask out blocked directions.
+  }
+
+  public void updateFrom(PipeComponent pp) {
+    this.pipeState = pp.pipeState;
+    this.blockPipeState = pp.blockPipeState;
   }
 
   public void setPipeState(int pipeState) {
     this.pipeState = pipeState;
   }
 
-  public void setDirectionalConnection(Vector3i direction, boolean connected) {
+  public static int getBitIndex(Vector3i direction) {
     var getIndex = -1;
     for (int i = 0; i < Vector3i.BLOCK_SIDES.length; i++) {
-      if (Vector3i.BLOCK_SIDES[i] == direction) {
+      if (Vector3i.BLOCK_SIDES[i].equals(direction)) {
         getIndex = i;
         break;
       }
     }
+    return getIndex;
+  }
+
+  public void setBlockedDirection(Vector3i direction, boolean canConnect) {
+    int getIndex = getBitIndex(direction);
     if (getIndex == -1) {
       return;
     }
-    if (connected) {
-      this.pipeState |= 0b111 << getIndex;
+    if (canConnect) {
+      blockPipeState &= ~(1 << getIndex);
     } else {
-      this.pipeState &= ~(0b111 << getIndex);
+      blockPipeState |= 1 << getIndex;
     }
+
+    MSPlugin.getLog()
+        .log("Set blocked direction: " + direction.toString() + ", state: " + blockPipeState + ", index: " + getIndex
+            + ". in binary" + Integer.toBinaryString(blockPipeState) + ", mask: "
+            + Integer.toBinaryString(1 << getIndex) + ". in binary: "
+            + Integer.toBinaryString(blockPipeState) + " | " + Integer.toBinaryString(1 << getIndex)
+            + ".");
+  }
+
+  public boolean canConnectTo(Vector3i direction) {
+    int getIndex = getBitIndex(direction.clone().negate());
+    if (getIndex == -1) {
+      return false;
+    }
+    // MSPlugin.getLog().log("Trying to connect to " + direction.toString() + ",
+    // state: " + blockPipeState + ", index: "
+    // + getIndex + ", result: " + ((blockPipeState & (1 << getIndex)) == 0) + ". in
+    // binary: "
+    // + Integer.toBinaryString(blockPipeState) + " & " + Integer.toBinaryString(1
+    // << getIndex));
+    return (blockPipeState & (1 << getIndex)) == 0;
+  }
+
+  public void setDirectionalConnection(Vector3i direction, boolean connected) {
+    int getIndex = getBitIndex(direction);
+    if (getIndex == -1) {
+      return;
+    }
+    setDirectionalConnectionIndex(getIndex, connected);
   }
 
   public void setDirectionalConnectionIndex(int index, boolean connected) {
@@ -83,8 +131,7 @@ public class PipeComponent implements Component<ChunkStore> {
   }
 
   public boolean isMatchingMask(int occupancymask) {
-    return this.pipeState == occupancymask; // check if all bits in the mask are set in
-                                            // pipeState even if pipestate has more bits
+    return getPipeState() == occupancymask;
   }
 
   public boolean hasDirectionalConnection(Vector3i direction) {
@@ -98,11 +145,11 @@ public class PipeComponent implements Component<ChunkStore> {
     if (getIndex == -1) {
       return false;
     }
-    return ((this.pipeState >> getIndex) & 1) == 1; // check the bit at the index position
+    return ((getPipeState() >> getIndex) & 1) == 1; // check the bit at the index position
   }
 
   public boolean hasDirectionalConnectionIndex(int index) {
-    return ((this.pipeState >> index) & 1) == 1; // check the bit at the index position
+    return ((getPipeState() >> index) & 1) == 1; // check the bit at the index position
   }
 
   @NullableDecl
@@ -126,6 +173,7 @@ public class PipeComponent implements Component<ChunkStore> {
     return "PipeComponent{" +
         "pipeState=" + Integer.toBinaryString(pipeState) +
         ", connections=" + sb.toString() +
+        ", blocked directions=" + Integer.toBinaryString(blockPipeState) +
         '}';
   }
 
