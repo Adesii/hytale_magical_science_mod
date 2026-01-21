@@ -258,9 +258,7 @@ public class ToolWrenchInteraction extends SimpleBlockInteraction {
               new Vector3f(0.3f, 0.3f, 0.3f), 0.6, 3);
         }
       }
-      // MSPlugin.getLog().log(hit.position.toString());
-      // DebugUtils.addSphere(world, hit.position.add(targetBlock.toVector3d()), new
-      // Vector3f(100, 0, 0), 0.4, 10f);
+
     }
 
   }
