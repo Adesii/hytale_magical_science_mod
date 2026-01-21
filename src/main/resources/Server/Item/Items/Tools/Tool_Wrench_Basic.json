@@ -89,5 +89,7 @@
       "Tool"
     ]
   },
-  "ItemSoundSetId": "ISS_Weapons_Wood"
+  "ItemSoundSetId": "ISS_Weapons_Wood",
+  "ClipsGeometry": true,
+  "RenderDeployablePreview": true
 }

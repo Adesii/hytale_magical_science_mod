@@ -86,13 +86,14 @@ public class PipeComponent implements Component<ChunkStore> {
     } else {
       blockPipeState |= 1 << getIndex;
     }
+  }
 
-    MSPlugin.getLog()
-        .log("Set blocked direction: " + direction.toString() + ", state: " + blockPipeState + ", index: " + getIndex
-            + ". in binary" + Integer.toBinaryString(blockPipeState) + ", mask: "
-            + Integer.toBinaryString(1 << getIndex) + ". in binary: "
-            + Integer.toBinaryString(blockPipeState) + " | " + Integer.toBinaryString(1 << getIndex)
-            + ".");
+  public void toggleBlockedDirection(Vector3i direction) {
+    int getIndex = getBitIndex(direction.clone().negate());
+    if (getIndex == -1) {
+      return;
+    }
+    blockPipeState ^= 1 << getIndex;
   }
 
   public boolean canConnectTo(Vector3i direction) {
@@ -100,12 +101,7 @@ public class PipeComponent implements Component<ChunkStore> {
     if (getIndex == -1) {
       return false;
     }
-    // MSPlugin.getLog().log("Trying to connect to " + direction.toString() + ",
-    // state: " + blockPipeState + ", index: "
-    // + getIndex + ", result: " + ((blockPipeState & (1 << getIndex)) == 0) + ". in
-    // binary: "
-    // + Integer.toBinaryString(blockPipeState) + " & " + Integer.toBinaryString(1
-    // << getIndex));
+
     return (blockPipeState & (1 << getIndex)) == 0;
   }
 

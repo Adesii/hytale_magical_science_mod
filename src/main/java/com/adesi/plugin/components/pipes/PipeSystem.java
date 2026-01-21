@@ -31,7 +31,6 @@ import com.hypixel.hytale.server.core.universe.world.chunk.BlockChunk;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 
-
 public class PipeSystem {
   public record PipeArrangement(RotationTuple rotation, String state) {
   }
@@ -325,8 +324,8 @@ public class PipeSystem {
 
       PipeComponent pipe = archetypeChunkChunkStore.getComponent(index, PipeComponent.getComponentType());
       var ref = archetypeChunkChunkStore.getReferenceTo(index);
-      MSPlugin.get().getLogger().at(Level.INFO).log("Added ChunkStore to Entity: "
-          + ref.toString());
+      // MSPlugin.get().getLogger().at(Level.INFO).log("Added ChunkStore to Entity: "
+      // + ref.toString());
 
       var blockstate = storeChunkStore.getComponent(ref,
           BlockStateInfo.getComponentType());
@@ -398,13 +397,14 @@ public class PipeSystem {
         if (newblockstate == null) {
           newblockstate = blockType;
         }
-        MSPlugin.getLog()
-            .log("Setting block update at: " + x + y + z + ", " + pa.rotation + " to state:" + newblockstate.getId()
-                + "  " + pipe.toString());
+        // MSPlugin.getLog()
+        // .log("Setting block update at: " + x + y + z + ", " + pa.rotation + " to
+        // state:" + newblockstate.getId()
+        // + " " + pipe.toString());
         var oldstatess = wc2.getBlockType(x, y, z).getId();
         if (oldstatess == newblockstate.getId()) {
-          MSPlugin.getLog()
-              .log("No change in state: " + oldstatess + " to " + newblockstate.getId());
+          // MSPlugin.getLog()
+          // .log("No change in state: " + oldstatess + " to " + newblockstate.getId());
           _store.removeComponent(ref, UpdatePipeComponent.getComponentType());
           return;
         }
@@ -420,7 +420,7 @@ public class PipeSystem {
         var entitystore = entity.getStore();
         var npipe = entitystore.getComponent(entity, PipeComponent.getComponentType());
         npipe.updateFrom(pipe);
-        MSPlugin.getLog().log("       END OF UPDATE    " + npipe.toString());
+        // MSPlugin.getLog().log(" END OF UPDATE " + npipe.toString());
 
       });
     }
@@ -457,7 +457,8 @@ public class PipeSystem {
         Store<ChunkStore> storeChunkStore,
         CommandBuffer<ChunkStore> commandBufferChunkStore) {
 
-      MSPlugin.getLog().log("Setting component " + pipeComponent.toString() + " TO" + pipeComponent2.toString());
+      // MSPlugin.getLog().log("Setting component " + pipeComponent.toString() + " TO"
+      // + pipeComponent2.toString());
 
       var blockstate = storeChunkStore.getComponent(refChunkStore, BlockStateInfo.getComponentType());
       var chunkref = blockstate.getChunkRef();
@@ -481,9 +482,12 @@ public class PipeSystem {
           WorldChunk wc2 = _store.getComponent(chunkref, WorldChunk.getComponentType());
           PipeArrangement pa = test;
           var newblockstate = blockType.getBlockForState(pa.state);
-          MSPlugin.getLog()
-              .log("Setting bloc at: " + x + y + z + ", " + pa.rotation + " to state:"
-                  + newblockstate.getId() + "  " + pipeComponent.toString());
+          if (newblockstate == null) {
+            return;
+          }
+          // MSPlugin.getLog()
+          // .log("Setting bloc at: " + x + y + z + ", " + pa.rotation + " to state:"
+          // + newblockstate.getId() + " " + pipeComponent.toString());
           wc2.setBlock(x, y, z,
               BlockType.getAssetMap().getIndex(newblockstate.getId()), newblockstate,
               pa.rotation.index(), 0, 2);
