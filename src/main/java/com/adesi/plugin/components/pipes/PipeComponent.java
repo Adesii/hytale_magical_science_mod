@@ -96,6 +96,10 @@ public class PipeComponent implements Component<ChunkStore> {
     blockPipeState ^= 1 << getIndex;
   }
 
+  public boolean getBlockedState(Vector3i dir) {
+    return (blockPipeState & (1 << getBitIndex(dir))) != 0;
+  }
+
   public boolean canConnectTo(Vector3i direction) {
     int getIndex = getBitIndex(direction.clone().negate());
     if (getIndex == -1) {

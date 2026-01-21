@@ -26,6 +26,7 @@ import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 import com.hypixel.hytale.server.npc.corecomponents.world.SensorCanPlace.Direction;
+import com.hypixel.hytale.server.spawning.util.FloodFillPositionSelector.Debug;
 
 public class ToolWrenchInteraction extends SimpleBlockInteraction {
   public static final BuilderCodec<ToolWrenchInteraction> CODEC = BuilderCodec.builder(
@@ -237,14 +238,31 @@ public class ToolWrenchInteraction extends SimpleBlockInteraction {
     if (intersectBoxes(ttt.getPosition().subtract(targetBlock), ttt.getDirection().normalize(),
         bbb.get(rotation.yaw(), rotation.pitch(), rotation.roll()).getDetailBoxes(), 100, hit)) {
 
-      pipecomponent.toggleBlockedDirection(SnapToAxis(hit.position.clone().subtract(0.5)).negate());
+      var dir = SnapToAxis(hit.position.clone().subtract(0.5).normalize()).negate();
+      pipecomponent.toggleBlockedDirection(dir);
+      entitystore.putComponent(entity, PipeComponent.getComponentType(),
+          pipecomponent);
+      var dd = dir.clone().negate();
+      var neighbourpipe = worldchunk.getBlockComponentEntity(targetBlock.x + dd.x, targetBlock.y + dd.y,
+          targetBlock.z + dd.z);
+      if (neighbourpipe != null) {
+        var neighbourpipecomp = neighbourpipe.getStore().getComponent(neighbourpipe,
+            PipeComponent.getComponentType());
+        if (neighbourpipecomp != null) {
+          neighbourpipecomp.setBlockedDirection(dd.clone().negate(), !pipecomponent.getBlockedState(dd));
+          neighbourpipe.getStore().putComponent(neighbourpipe,
+              PipeComponent.getComponentType(), neighbourpipecomp);
+          DebugUtils.addCube(world,
+              new Vector3d(targetBlock.x + dd.x, targetBlock.y + dd.y, targetBlock.z +
+                  dd.z),
+              new Vector3f(0.3f, 0.3f, 0.3f), 0.6, 3);
+        }
+      }
       // MSPlugin.getLog().log(hit.position.toString());
       // DebugUtils.addSphere(world, hit.position.add(targetBlock.toVector3d()), new
       // Vector3f(100, 0, 0), 0.4, 10f);
     }
 
-    entitystore.putComponent(entity, PipeComponent.getComponentType(),
-        pipecomponent);
   }
 
   @Override

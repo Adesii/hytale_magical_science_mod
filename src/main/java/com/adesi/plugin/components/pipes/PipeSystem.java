@@ -351,8 +351,10 @@ public class PipeSystem {
           var entity = chunkrefforblock.getBlockComponentEntity(currentX, currentY, currentZ);
           if (holder != null) {
             var neighbourPipe = storeChunkStore.getComponent(entity, PipeComponent.getComponentType());
-            if (neighbourPipe != null && neighbourPipe.canConnectTo(dir)) {
-              occupiedMask |= 1 << iterationIndex;
+            if (neighbourPipe != null) {
+              if (neighbourPipe.canConnectTo(dir)) {
+                occupiedMask |= 1 << iterationIndex;
+              }
             }
           }
         }
