@@ -49,11 +49,14 @@ java {
     withSourcesJar()
 }
 
-
-
-
 hytale {
-    programArgs.add("--mods="+layout.projectDirectory.dir("src/main/").asFile.absolutePath)
+    programArgs.add(
+        "--mods=" +
+            layout.projectDirectory
+                .dir("src/main/")
+                .asFile.absolutePath,
+    )
+    updateChannel = "pre-release"
 }
 
 tasks.withType<Jar> {

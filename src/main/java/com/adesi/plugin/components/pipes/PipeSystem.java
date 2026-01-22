@@ -243,51 +243,41 @@ public class PipeSystem {
     // MSPlugin.get().getLogger().atInfo().log("Directions: " +
     // Arrays.toString(dirs.toArray()));
     int count = dirs.size();
+    switch (count) {
+      case 0:
+        return new PipeArrangement(RotationTuple.NONE, "default");
+      case 1:
+        return new PipeArrangement(findRotation(CANONICAL_ONE_WAY, dirs), "One_Way");
+      case 2:
+        if (isStraight(dirs)) {
+          return new PipeArrangement(findRotation(CANONICAL_STRAIGHT, dirs), "Straight");
+        }
+        if (isElbow(dirs)) {
+          return new PipeArrangement(findRotation(CANONICAL_ELBOW, dirs), "Corner_Left");
+        }
+        break;
+      case 3:
+        if (isT(dirs)) {
+          return new PipeArrangement(findRotation(CANONICAL_T, dirs), "T");
+        }
+        if (isCorner(dirs)) {
+          return new PipeArrangement(findRotation(CANONICAL_CORNERS, dirs), "Corner_Full");
 
-    if (count == 0) {
-      return new PipeArrangement(RotationTuple.NONE,
-          "default");
+        }
+      case 4:
+        if (isCross(dirs)) {
+          return new PipeArrangement(findRotation(CANONICAL_CROSS, dirs), "Cross");
+        }
+        if (isSpecialCorner(dirs)) {
+          return new PipeArrangement(findRotation(CANONICAL_SPECIAL_CORNER, dirs), "Corner_Special");
+        }
+        break;
+      case 5:
+        return new PipeArrangement(findRotation(CANONICAL_EXTRA_CROSS, dirs), "Cross_Extra");
+
+      default:
+        break;
     }
-
-    if (count == 1) {
-      return new PipeArrangement(findRotation(CANONICAL_ONE_WAY, dirs), "One_Way");
-    }
-
-    if (count == 2) {
-      if (isStraight(dirs)) {
-        return new PipeArrangement(findRotation(CANONICAL_STRAIGHT, dirs), "Straight");
-      }
-      if (isElbow(dirs)) {
-        return new PipeArrangement(findRotation(CANONICAL_ELBOW, dirs), "Corner_Left");
-      }
-      return invalid();
-    }
-
-    if (count == 3) {
-      if (isT(dirs)) {
-        return new PipeArrangement(findRotation(CANONICAL_T, dirs), "T");
-      }
-      if (isCorner(dirs)) {
-        return new PipeArrangement(findRotation(CANONICAL_CORNERS, dirs), "Corner_Full");
-
-      }
-      return invalid();
-    }
-
-    if (count == 4) {
-      if (isCross(dirs)) {
-        return new PipeArrangement(findRotation(CANONICAL_CROSS, dirs), "Cross");
-      }
-      if (isSpecialCorner(dirs)) {
-        return new PipeArrangement(findRotation(CANONICAL_SPECIAL_CORNER, dirs), "Corner_Special");
-      }
-    }
-
-    if (count == 5) {
-      return new PipeArrangement(findRotation(CANONICAL_EXTRA_CROSS, dirs), "Cross_Extra");
-    }
-
-    // 4+ connections: symmetric
     return new PipeArrangement(
         RotationTuple.of(Rotation.None, Rotation.None, Rotation.None),
         "Full");
