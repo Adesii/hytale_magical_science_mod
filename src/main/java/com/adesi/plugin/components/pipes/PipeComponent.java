@@ -1,10 +1,5 @@
 package com.adesi.plugin.components.pipes;
 
-import java.nio.channels.Pipe;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.annotation.Nonnull;
 
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
@@ -18,7 +13,6 @@ import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
-import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 
 public class PipeComponent implements Component<ChunkStore> {
 
