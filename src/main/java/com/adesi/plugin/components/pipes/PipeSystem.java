@@ -157,17 +157,6 @@ public class PipeSystem {
     return null;
   }
 
-  static boolean isElbow(Set<Vector3i> dirs) {
-    Iterator<Vector3i> it = dirs.iterator();
-    Vector3i a = it.next();
-    Vector3i b = it.next();
-
-    if (a.equals(new Vector3i(b).negate())) {
-      return false;
-    }
-    return axisOf(a) != axisOf(b);
-  }
-
   static boolean isT(Set<Vector3i> dirs) {
     if (dirs.size() != 3)
       return false;
@@ -177,37 +166,6 @@ public class PipeSystem {
     boolean z = dirs.stream().anyMatch(d -> axisOf(d) == Axis.Z);
 
     return (x ? 1 : 0) + (y ? 1 : 0) + (z ? 1 : 0) == 2;
-  }
-
-  static boolean isCorner(Set<Vector3i> dirs) {
-    if (dirs.size() != 3)
-      return false;
-    Iterator<Vector3i> it = dirs.iterator();
-    Vector3i a = it.next();
-    Vector3i b = it.next();
-    Vector3i c = it.next();
-
-    return axisOf(a) != axisOf(b) && axisOf(b) != axisOf(c) && axisOf(a) != axisOf(c);
-  }
-
-  static boolean isSpecialCorner(Set<Vector3i> dirs) {
-    int[] axes_count = new int[3];
-    for (Vector3i dir : dirs) {
-      Axis axis = axisOf(dir);
-      axes_count[axis.ordinal()]++;
-    }
-    boolean has_two_common = false;
-    boolean has_atleast_one = false;
-    for (int count : axes_count) {
-      if (count == 2)
-        has_two_common = true;
-      else if (count >= 1)
-        has_atleast_one = true;
-      else {
-        return false;
-      }
-    }
-    return has_two_common && has_atleast_one;
   }
 
   static boolean isStraight(Set<Vector3i> dirs) {
@@ -240,8 +198,6 @@ public class PipeSystem {
   public static PipeArrangement getPipeArrangement(int pipestate) {
 
     Set<Vector3i> dirs = directionsFromState(pipestate);
-    // MSPlugin.get().getLogger().atInfo().log("Directions: " +
-    // Arrays.toString(dirs.toArray()));
     int count = dirs.size();
     switch (count) {
       case 0:
@@ -251,27 +207,22 @@ public class PipeSystem {
       case 2:
         if (isStraight(dirs)) {
           return new PipeArrangement(findRotation(CANONICAL_STRAIGHT, dirs), "Straight");
-        }
-        if (isElbow(dirs)) {
+        } else {
           return new PipeArrangement(findRotation(CANONICAL_ELBOW, dirs), "Corner_Left");
         }
-        break;
       case 3:
         if (isT(dirs)) {
           return new PipeArrangement(findRotation(CANONICAL_T, dirs), "T");
-        }
-        if (isCorner(dirs)) {
+        } else {
           return new PipeArrangement(findRotation(CANONICAL_CORNERS, dirs), "Corner_Full");
 
         }
       case 4:
         if (isCross(dirs)) {
           return new PipeArrangement(findRotation(CANONICAL_CROSS, dirs), "Cross");
-        }
-        if (isSpecialCorner(dirs)) {
+        } else {
           return new PipeArrangement(findRotation(CANONICAL_SPECIAL_CORNER, dirs), "Corner_Special");
         }
-        break;
       case 5:
         return new PipeArrangement(findRotation(CANONICAL_EXTRA_CROSS, dirs), "Cross_Extra");
 
@@ -369,7 +320,16 @@ public class PipeSystem {
           .getAsset(blockchunk.getBlock(ChunkUtil.xFromBlockInColumn(blockstate.getIndex()),
               y,
               ChunkUtil.zFromBlockInColumn(blockstate.getIndex())));
-      var currentstate = blockType.getState().getStateForBlock(blockType.getId());
+      if (blockType == null) {
+        MSPlugin.LOGGER.atFine().log("blocktype is null");
+        return;
+      }
+      var blockypestate = blockType.getState();
+      if (blockypestate == null) {
+        MSPlugin.LOGGER.atFine().log("blockypestate is null");
+        return;
+      }
+      var currentstate = blockypestate.getStateForBlock(blockType.getId());
       MSPlugin.getLog().log(currentstate + " " + pa.state);
       if (oldstate.state == pa.state && oldstate.rotation.equals(pa.rotation)
           && currentstate == pa.state) {
@@ -388,6 +348,7 @@ public class PipeSystem {
         var newblockstate = blockType.getBlockForState(pa.state);
         if (newblockstate == null) {
           newblockstate = blockType;
+
         }
         // MSPlugin.getLog()
         // .log("Setting block update at: " + x + y + z + ", " + pa.rotation + " to
@@ -400,9 +361,10 @@ public class PipeSystem {
           _store.removeComponent(ref, UpdatePipeComponent.getComponentType());
           return;
         }
+        var rotation = pa.rotation == null ? oldstate.rotation.index() : pa.rotation.index();
         wc2.setBlock(x, y, z,
             BlockType.getAssetMap().getIndex(newblockstate.getId()), newblockstate,
-            pa.rotation.index(), 0, 2);
+            rotation, 0, 2);
         // wc2.setBlockInteractionState(x, y, z, blockType, pa.state, true);
         var entity = wc2.getBlockComponentEntity(x, y, z);
         if (entity == null) {
@@ -522,11 +484,10 @@ public class PipeSystem {
 
       switch (addReason) {
         case SPAWN:
-
-          var blockstate = commandBufferChunkStore.getComponent(refChunkStore, BlockStateInfo.getComponentType());
+          var blockstate = storeChunkStore.getComponent(refChunkStore, BlockStateInfo.getComponentType());
           var chunkref = blockstate.getChunkRef();
           if (chunkref != null && chunkref.isValid()) {
-            var blockchunk = commandBufferChunkStore.getComponent(chunkref, BlockChunk.getComponentType());
+            var blockchunk = storeChunkStore.getComponent(chunkref, BlockChunk.getComponentType());
             int x = ChunkUtil.worldCoordFromLocalCoord(blockchunk.getX(),
                 ChunkUtil.xFromBlockInColumn(blockstate.getIndex()));
             int y = ChunkUtil.yFromBlockInColumn(blockstate.getIndex());
@@ -535,7 +496,7 @@ public class PipeSystem {
             // MSPlugin.get().getLogger().at(Level.INFO).log("Pipe is at:" + " " + x + " " +
             // y + " " + z);
             int occupiedMask = 0;
-            var world = commandBufferChunkStore.getExternalData().getWorld();
+            var world = storeChunkStore.getExternalData().getWorld();
             int iterationIndex = -1;
             var pipeComponent = storeChunkStore.getComponent(refChunkStore, PipeComponent.getComponentType());
 
@@ -551,7 +512,7 @@ public class PipeSystem {
                 var holder = chunkrefforblock.getBlockComponentHolder(currentX, currentY, currentZ);
                 var entity = chunkrefforblock.getBlockComponentEntity(currentX, currentY, currentZ);
                 if (holder != null) {
-                  var neighbourPipe = commandBufferChunkStore.getComponent(entity, PipeComponent.getComponentType());
+                  var neighbourPipe = storeChunkStore.getComponent(entity, PipeComponent.getComponentType());
                   if (neighbourPipe != null && neighbourPipe.canConnectTo(dir)) {
 
                     occupiedMask |= 1 << iterationIndex;
@@ -609,9 +570,22 @@ public class PipeSystem {
                   wc2.setBlock(x, y, z,
                       BlockType.getAssetMap().getIndex(newblockstate.getId()), newblockstate,
                       pa.rotation.index(), 0, 2);
+                  var graphchunkcomponent = _store.ensureAndGetComponent(chunkref,
+                      GraphChunkController.getGraphChunkControllerType());
+                  if (graphchunkcomponent != null) {
+                    MSPlugin.getLog().log("Adding new node to graph");
+                    graphchunkcomponent.AddNode(new Vector3i(x, y, z), pipeComponent.getPipeState());
+                  }
                 });
               }
-
+            }
+            if (pipeComponent != null && pipeComponent.getPipeState() == 0) {
+              var graphchunkcomponent = commandBufferChunkStore.ensureAndGetComponent(chunkref,
+                  GraphChunkController.getGraphChunkControllerType());
+              if (graphchunkcomponent != null) {
+                MSPlugin.getLog().log("Adding fresh new  node to graph");
+                graphchunkcomponent.AddNode(new Vector3i(x, y, z), occupiedMask);
+              }
             }
           }
 
@@ -645,7 +619,7 @@ public class PipeSystem {
         int y = ChunkUtil.yFromBlockInColumn(blockstate.getIndex());
         int z = ChunkUtil.worldCoordFromLocalCoord(blockchunk.getZ(),
             ChunkUtil.zFromBlockInColumn(blockstate.getIndex()));
-        var world = storeChunkStore.getExternalData().getWorld();
+        var world = commandBufferChunkStore.getExternalData().getWorld();
 
         for (var dir : Vector3i.BLOCK_SIDES) {
           var currentX = x + dir.x;
@@ -657,15 +631,20 @@ public class PipeSystem {
             var holder = chunkrefforblock.getBlockComponentHolder(currentX, currentY, currentZ);
             var entity = chunkrefforblock.getBlockComponentEntity(currentX, currentY, currentZ);
             if (holder != null) {
-              var neighbourPipe = storeChunkStore.getComponent(entity, PipeComponent.getComponentType());
+              var neighbourPipe = commandBufferChunkStore.getComponent(entity, PipeComponent.getComponentType());
               if (neighbourPipe != null && neighbourPipe.canConnectTo(dir)) {
-                commandBufferChunkStore.run(_store -> {
-                  _store.ensureComponent(entity, UpdatePipeComponent.getComponentType());
-                });
+                commandBufferChunkStore.ensureComponent(entity, UpdatePipeComponent.getComponentType());
               }
             }
           }
         }
+        var graphchunkcomponent = commandBufferChunkStore.ensureAndGetComponent(chunkref,
+            GraphChunkController.getGraphChunkControllerType());
+        if (graphchunkcomponent != null) {
+          MSPlugin.getLog().log("Adding remove node to graph");
+          graphchunkcomponent.RemoveNode(new Vector3i(x, y, z));
+        }
+
       }
 
     }
