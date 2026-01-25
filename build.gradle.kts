@@ -10,16 +10,8 @@ import org.gradle.api.tasks.JavaExec
 plugins {
     // Apply the application plugin to add support for building a CLI application in Java.
     `maven-publish`
-    id("hytale-mod") version "0.5.1-alpha"
+    id("hytale-mod") version "0.7.2-alpha"
 }
-
-group = "com.adesi"
-version = "0.1-SNAPSHOT"
-val projectname = "MagicalScience"
-
-val javaVersion = 25
-val appData = System.getenv("APPDATA") ?: (System.getenv("HOME") + "/.var/app/com.hypixel.HytaleLauncher/data")
-val hytaleAssets = file("$appData/Hytale/install/release/package/game/latest/Assets.zip")
 
 repositories {
     // Use Maven Central for resolving dependencies.
@@ -32,18 +24,11 @@ dependencies {
 
     compileOnly(libs.jetbrains.annotations)
     compileOnly(libs.jspecify)
-
-    if (hytaleAssets.exists()) {
-        compileOnly(files(hytaleAssets))
-    } else {
-        // Optional: Print a warning so you know why it's missing
-        logger.warn("Hytale Assets.zip not found at: ${hytaleAssets.absolutePath}")
-    }
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(javaVersion)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 
     withSourcesJar()
@@ -56,7 +41,7 @@ hytale {
                 .dir("src/main/")
                 .asFile.absolutePath,
     )
-    updateChannel = "pre-release"
+    // updateChannel = "pre-release"
 }
 
 tasks.withType<Jar> {

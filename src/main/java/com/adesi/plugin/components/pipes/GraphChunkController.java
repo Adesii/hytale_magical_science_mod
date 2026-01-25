@@ -8,10 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentMap;
 
 import com.adesi.plugin.MSPlugin;
-import com.google.protobuf.FieldType;
 import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;

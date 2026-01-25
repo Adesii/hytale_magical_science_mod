@@ -26,7 +26,10 @@ import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.BlockType;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.Rotation;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.RotationTuple;
+import com.hypixel.hytale.server.core.entity.EntityUtils;
 import com.hypixel.hytale.server.core.modules.block.BlockModule.BlockStateInfo;
+import com.hypixel.hytale.server.core.modules.collision.WorldUtil;
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.chunk.BlockChunk;
 import com.hypixel.hytale.server.core.universe.world.chunk.WorldChunk;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
@@ -382,16 +385,15 @@ public class PipeSystem {
   }
 
   public static class PipeChangeSystem extends RefChangeSystem<ChunkStore, PipeComponent> {
-    public static final ComponentType<ChunkStore, PipeComponent> COMPONENT_TYPE = PipeComponent.getComponentType();
 
     @Override
     public Query<ChunkStore> getQuery() {
-      return Query.and(COMPONENT_TYPE);
+      return Query.and(PipeComponent.getComponentType());
     }
 
     @Override
     public ComponentType<ChunkStore, PipeComponent> componentType() {
-      return COMPONENT_TYPE;
+      return PipeComponent.getComponentType();
     }
 
     @Override
@@ -440,7 +442,7 @@ public class PipeSystem {
             return;
           }
           // MSPlugin.getLog()
-          // .log("Setting bloc at: " + x + y + z + ", " + pa.rotation + " to state:"
+          // .log("Setting bloc idk at: " + x + y + z + ", " + pa.rotation + " to state:"
           // + newblockstate.getId() + " " + pipeComponent.toString());
           wc2.setBlock(x, y, z,
               BlockType.getAssetMap().getIndex(newblockstate.getId()), newblockstate,
@@ -471,11 +473,9 @@ public class PipeSystem {
 
   public static class PipeRefSystem extends RefSystem<ChunkStore> {
 
-    public static final ComponentType<ChunkStore, PipeComponent> COMPONENT_TYPE = PipeComponent.getComponentType();
-
     @Override
     public Query<ChunkStore> getQuery() {
-      return Query.and(COMPONENT_TYPE, Query.not(UpdatePipeComponent.getComponentType()));
+      return Query.and(PipeComponent.getComponentType(), Query.not(UpdatePipeComponent.getComponentType()));
     }
 
     @Override
@@ -522,11 +522,12 @@ public class PipeSystem {
               }
             }
             if (pipeComponent != null && !pipeComponent.isMatchingMask(occupiedMask)) {
-              MSPlugin.getLog().log(" before set" + pipeComponent.toString());
+              // MSPlugin.getLog().log(" before set" + pipeComponent.toString());
               pipeComponent.setDirectionalState(occupiedMask);
               pipeComponent.setPipeState(occupiedMask);
               var test = getPipeArrangement(pipeComponent.getPipeState());
-              MSPlugin.getLog().log(" after set" + pipeComponent.toString() + "  new state" + test.state);
+              // MSPlugin.getLog().log(" after set" + pipeComponent.toString() + " new state"
+              // + test.state);
               BlockType blockType = BlockType.getAssetMap()
                   .getAsset(blockchunk.getBlock(ChunkUtil.xFromBlockInColumn(blockstate.getIndex()), y,
                       ChunkUtil.zFromBlockInColumn(blockstate.getIndex())));
@@ -564,16 +565,16 @@ public class PipeSystem {
                       }
                     }
                   }
-                  MSPlugin.getLog()
-                      .log("Setting bloc at: " + x + y + z + ", " + pa.rotation + " to state:"
-                          + newblockstate.getId() + "  " + pipeComponent.toString());
+                  // MSPlugin.getLog()
+                  // .log("Setting bloc at: " + x + y + z + ", " + pa.rotation + " to state:"
+                  // + newblockstate.getId() + " " + pipeComponent.toString());
                   wc2.setBlock(x, y, z,
                       BlockType.getAssetMap().getIndex(newblockstate.getId()), newblockstate,
                       pa.rotation.index(), 0, 2);
                   var graphchunkcomponent = _store.ensureAndGetComponent(chunkref,
                       GraphChunkController.getGraphChunkControllerType());
                   if (graphchunkcomponent != null) {
-                    MSPlugin.getLog().log("Adding new node to graph");
+                    // MSPlugin.getLog().log("Adding new node to graph");
                     graphchunkcomponent.AddNode(new Vector3i(x, y, z), pipeComponent.getPipeState());
                   }
                 });
@@ -583,7 +584,7 @@ public class PipeSystem {
               var graphchunkcomponent = commandBufferChunkStore.ensureAndGetComponent(chunkref,
                   GraphChunkController.getGraphChunkControllerType());
               if (graphchunkcomponent != null) {
-                MSPlugin.getLog().log("Adding fresh new  node to graph");
+                // MSPlugin.getLog().log("Adding fresh new node to graph");
                 graphchunkcomponent.AddNode(new Vector3i(x, y, z), occupiedMask);
               }
             }

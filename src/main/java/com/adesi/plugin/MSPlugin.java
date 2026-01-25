@@ -37,8 +37,6 @@ public class MSPlugin extends JavaPlugin {
 
   @Override
   protected void setup() {
-    super.setup();
-    this.getCommandRegistry().registerCommand(new TestCommand("plus", "zooooo", false));
     this.pipeType = this.getChunkStoreRegistry().registerComponent(PipeComponent.class, "Pipe", PipeComponent.CODEC);
     this.pipeUpdateType = this.getChunkStoreRegistry().registerComponent(UpdatePipeComponent.class,
         UpdatePipeComponent::new);
