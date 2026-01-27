@@ -92,13 +92,13 @@ public class GraphChunkController implements Component<ChunkStore> {
           existingNode.extendLength++;
           graphMap.put(currentPositionStr, existingNode.graphid.toString());
           MSPlugin.getLog().log("Extending Node at " + targetLocationStr);
-          AddJunctionsAround(position, neighbours);
+          UpdateJunctions(position, neighbours);
           return;
         }
       }
     }
     RegisterNewNode(position);
-    AddJunctionsAround(position, neighbours);
+    UpdateJunctions(position, neighbours);
   }
 
   public void RemoveNode(Vector3i position) {
@@ -125,34 +125,27 @@ public class GraphChunkController implements Component<ChunkStore> {
     RemoveJunctionsAround(position);
   }
 
-  private void AddJunctionsAround(Vector3i position, ArrayList<Vector3i> neighbours) {
-    var targetLocationStr = VtoString(position);
-    var ownNode = graphMap.get(targetLocationStr);
-    var junctions = new ArrayList<Vector3i>();
-    for (var dir : neighbours) {
-      var sidesposition = position.clone().add(dir);
-      var sidespositionStr = VtoString(sidesposition);
-      if (graphMap.containsKey(sidespositionStr) && !graphMap.get(sidespositionStr).equals(ownNode)) {
-        junctions.add(dir.clone());
-        if (graphJunctionMap.containsKey(sidespositionStr)) {
-          var junctionsAtNeighbour = graphJunctionMap.get(sidespositionStr);
-          var newNeighbourJunction = Arrays.copyOf(junctionsAtNeighbour,
-              junctionsAtNeighbour.length + 1);
-          newNeighbourJunction[newNeighbourJunction.length - 1] = dir.clone().negate();
-          graphJunctionMap.put(sidespositionStr, newNeighbourJunction);
-        } else {
-          var neighbourPipe = graphNodeMap.get(graphMap.get(sidespositionStr));
-          graphJunctionMap.put(sidespositionStr, new Vector3i[] { dir.clone().negate(),
-              neighbourPipe.extendDirection.clone(),
-              neighbourPipe.extendDirection.clone().negate() });
-        }
-      }
+  public boolean isStraight(ArrayList<Vector3i> neighbours) {
+    if (neighbours.size() != 2) {
+      return false;
     }
-    if (!junctions.isEmpty()) {
-      var junctionsAround = new Vector3i[junctions.size()];
-      graphJunctionMap.put(targetLocationStr, junctions.toArray(junctionsAround));
-    }
+    var a = neighbours.get(0);
+    var b = neighbours.get(1);
+    // Must be opposite directions
+    if (!a.equals(new Vector3i(b).negate()))
+      return false;
 
+    // Must share the same axis
+    return PipeSystem.axisOf(a) == PipeSystem.axisOf(b);
+  }
+
+  public void UpdateJunctions(Vector3i position, ArrayList<Vector3i> neighbours) {
+    if (isStraight(neighbours) || neighbours.size() < 2) {
+      return;
+    }
+    var targetLocationStr = VtoString(position);
+    var junctionsAround = new Vector3i[neighbours.size()];
+    graphJunctionMap.put(targetLocationStr, neighbours.toArray(junctionsAround));
   }
 
   private void RemoveJunctionsAround(Vector3i position) {
@@ -281,4 +274,5 @@ public class GraphChunkController implements Component<ChunkStore> {
         (int) Math.round(position.z));
     return graphMap.containsKey(VtoString(rounded_position));
   }
+
 }

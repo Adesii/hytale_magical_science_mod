@@ -283,6 +283,7 @@ public class PipeSystem {
           ChunkUtil.zFromBlockInColumn(blockstate.getIndex()));
       int iterationIndex = -1;
       int occupiedMask = 0;
+      ArrayList<Vector3i> Neighbours = new ArrayList<>();
       for (var dir : Vector3i.BLOCK_SIDES) {
         var currentX = x + dir.x;
         var currentY = y + dir.y;
@@ -298,6 +299,7 @@ public class PipeSystem {
             if (neighbourPipe != null) {
               if (neighbourPipe.canConnectTo(dir)) {
                 occupiedMask |= 1 << iterationIndex;
+                Neighbours.add(dir);
               }
             }
           }
@@ -378,6 +380,12 @@ public class PipeSystem {
         var npipe = entitystore.getComponent(entity, PipeComponent.getComponentType());
         npipe.updateFrom(pipe);
         // MSPlugin.getLog().log(" END OF UPDATE " + npipe.toString());
+        var graphchunkcomponent = _store.ensureAndGetComponent(wc2.getReference(),
+            GraphChunkController.getGraphChunkControllerType());
+        if (graphchunkcomponent != null) {
+          // MSPlugin.getLog().log("Adding new node to graph");
+          graphchunkcomponent.UpdateJunctions(new Vector3i(x, y, z), Neighbours);
+        }
 
       });
     }
