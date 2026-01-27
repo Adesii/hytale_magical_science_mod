@@ -1,5 +1,6 @@
 package com.adesi.plugin.Interactions.Tools;
 
+import com.adesi.plugin.components.pipes.DebugExtractComponent;
 import com.adesi.plugin.components.pipes.PipeComponent;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.component.CommandBuffer;
@@ -14,10 +15,15 @@ import com.hypixel.hytale.server.core.asset.type.blockhitbox.BlockBoundingBoxes;
 import com.hypixel.hytale.server.core.asset.type.blocktype.config.RotationTuple;
 import com.hypixel.hytale.server.core.entity.InteractionContext;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.inventory.container.ItemContainer;
 import com.hypixel.hytale.server.core.modules.debug.DebugUtils;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.CooldownHandler;
 import com.hypixel.hytale.server.core.modules.interaction.interaction.config.client.SimpleBlockInteraction;
 import com.hypixel.hytale.server.core.universe.world.World;
+import com.hypixel.hytale.server.core.universe.world.meta.BlockStateModule;
+import com.hypixel.hytale.server.core.universe.world.meta.state.ItemContainerBlockState;
+import com.hypixel.hytale.server.core.universe.world.meta.state.ItemContainerState;
+import com.hypixel.hytale.server.core.universe.world.meta.state.ItemContainerState.ItemContainerStateData;
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.TargetUtil;
 
@@ -218,6 +224,11 @@ public class ToolWrenchInteraction extends SimpleBlockInteraction {
     var pipecomponent = entitystore.getComponent(entity, PipeComponent.getComponentType());
     if (pipecomponent == null) {
       // MSPlugin.getLog().log("No pipe component found!");
+      var stateComponent = entitystore.getComponent(entity,
+          BlockStateModule.get().getComponentType(ItemContainerState.class));
+      if (stateComponent != null) {
+        entitystore.ensureComponent(entity, DebugExtractComponent.getComponentType());
+      }
       interactionContext.getState().state = InteractionState.Skip;
       return;
     }

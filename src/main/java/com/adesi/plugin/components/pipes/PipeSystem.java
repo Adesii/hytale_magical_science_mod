@@ -575,7 +575,7 @@ public class PipeSystem {
                       GraphChunkController.getGraphChunkControllerType());
                   if (graphchunkcomponent != null) {
                     // MSPlugin.getLog().log("Adding new node to graph");
-                    graphchunkcomponent.AddNode(new Vector3i(x, y, z), pipeComponent.getPipeState());
+                    graphchunkcomponent.AddNode(new Vector3i(x, y, z), neighbours);
                   }
                 });
               }
@@ -585,7 +585,7 @@ public class PipeSystem {
                   GraphChunkController.getGraphChunkControllerType());
               if (graphchunkcomponent != null) {
                 // MSPlugin.getLog().log("Adding fresh new node to graph");
-                graphchunkcomponent.AddNode(new Vector3i(x, y, z), occupiedMask);
+                graphchunkcomponent.AddNode(new Vector3i(x, y, z), neighbours);
               }
             }
           }

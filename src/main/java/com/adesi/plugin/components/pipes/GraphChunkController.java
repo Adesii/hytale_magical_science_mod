@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Map.Entry;
+import java.util.concurrent.ThreadLocalRandom;
 
 import com.adesi.plugin.MSPlugin;
 import com.hypixel.hytale.codec.Codec;
@@ -15,10 +16,15 @@ import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.codec.codecs.array.ArrayCodec;
 import com.hypixel.hytale.codec.codecs.map.MapCodec;
+import com.hypixel.hytale.common.util.ArrayUtil;
+import com.hypixel.hytale.component.AddReason;
 import com.hypixel.hytale.component.Component;
 import com.hypixel.hytale.component.ComponentType;
-
+import com.hypixel.hytale.math.vector.Vector3d;
+import com.hypixel.hytale.math.vector.Vector3f;
 import com.hypixel.hytale.math.vector.Vector3i;
+import com.hypixel.hytale.server.core.inventory.ItemStack;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
 
 public class GraphChunkController implements Component<ChunkStore> {
@@ -67,13 +73,13 @@ public class GraphChunkController implements Component<ChunkStore> {
     return newNode;
   }
 
-  public void AddNode(Vector3i position, int OccupiedMask) {
+  public void AddNode(Vector3i position, ArrayList<Vector3i> neighbours) {
     String currentPositionStr = VtoString(position);
     // figure out if we need to create a new node vs extending a existing one.
-    for (Vector3i sides : Vector3i.BLOCK_SIDES) {
+    for (Vector3i sides : neighbours) {
       Vector3i targetLocation = position.clone().add(sides);
       String targetLocationStr = VtoString(targetLocation);
-      if (graphMap.containsKey(targetLocationStr) && (OccupiedMask & (1 << PipeComponent.getBitIndex(sides))) != 0) {
+      if (graphMap.containsKey(targetLocationStr)) {
         GraphNode existingNode = graphNodeMap.get(graphMap.get(targetLocationStr));
         if (existingNode.extendDirection.equals(Vector3i.ALL_ONES)) {
           existingNode.extendDirection = sides;
@@ -86,13 +92,13 @@ public class GraphChunkController implements Component<ChunkStore> {
           existingNode.extendLength++;
           graphMap.put(currentPositionStr, existingNode.graphid.toString());
           MSPlugin.getLog().log("Extending Node at " + targetLocationStr);
-          AddJunctionsAround(position, OccupiedMask);
+          AddJunctionsAround(position, neighbours);
           return;
         }
       }
     }
     RegisterNewNode(position);
-    AddJunctionsAround(position, OccupiedMask);
+    AddJunctionsAround(position, neighbours);
   }
 
   public void RemoveNode(Vector3i position) {
@@ -119,25 +125,27 @@ public class GraphChunkController implements Component<ChunkStore> {
     RemoveJunctionsAround(position);
   }
 
-  private void AddJunctionsAround(Vector3i position, int OccupiedMask) {
+  private void AddJunctionsAround(Vector3i position, ArrayList<Vector3i> neighbours) {
     var targetLocationStr = VtoString(position);
     var ownNode = graphMap.get(targetLocationStr);
     var junctions = new ArrayList<Vector3i>();
-    for (var dir : Vector3i.BLOCK_SIDES) {
+    for (var dir : neighbours) {
       var sidesposition = position.clone().add(dir);
       var sidespositionStr = VtoString(sidesposition);
-      if (graphMap.containsKey(sidespositionStr) && !graphMap.get(sidespositionStr).equals(ownNode)
-          && (OccupiedMask * (1 << PipeComponent.getBitIndex(dir))) != 0) {
-        junctions.add(dir);
+      if (graphMap.containsKey(sidespositionStr) && !graphMap.get(sidespositionStr).equals(ownNode)) {
+        junctions.add(dir.clone());
         if (graphJunctionMap.containsKey(sidespositionStr)) {
           var junctionsAtNeighbour = graphJunctionMap.get(sidespositionStr);
-          var newNeighbourJunction = Arrays.copyOf(junctionsAtNeighbour, junctionsAtNeighbour.length + 1);
+          var newNeighbourJunction = Arrays.copyOf(junctionsAtNeighbour,
+              junctionsAtNeighbour.length + 1);
           newNeighbourJunction[newNeighbourJunction.length - 1] = dir.clone().negate();
           graphJunctionMap.put(sidespositionStr, newNeighbourJunction);
         } else {
-          graphJunctionMap.put(sidespositionStr, new Vector3i[] { dir.clone().negate() });
+          var neighbourPipe = graphNodeMap.get(graphMap.get(sidespositionStr));
+          graphJunctionMap.put(sidespositionStr, new Vector3i[] { dir.clone().negate(),
+              neighbourPipe.extendDirection.clone(),
+              neighbourPipe.extendDirection.clone().negate() });
         }
-
       }
     }
     if (!junctions.isEmpty()) {
@@ -205,5 +213,72 @@ public class GraphChunkController implements Component<ChunkStore> {
 
   public static ComponentType<ChunkStore, GraphChunkController> getGraphChunkControllerType() {
     return MSPlugin.get().getGraphChunkControllerType();
+  }
+
+  public void addItemToPipe(World world, Vector3i vector3i, ItemStack itemStack) {
+    if (itemStack == null || !graphMap.containsKey(VtoString(vector3i)))
+      return;
+    var pipeid = graphMap.get(VtoString(vector3i));
+    var pipenode = graphNodeMap.get(pipeid);
+    var reverse = false;
+    if (pipenode.startPosition.distanceSquaredTo(vector3i) > pipenode.startPosition.clone()
+        .add(pipenode.extendDirection.clone().scale(pipenode.extendLength)).distanceSquaredTo(vector3i)) {
+      reverse = true;
+    }
+    var transportPacket = TransportPacket.GenerateTransportPacket(itemStack, pipeid,
+        pipenode.extendDirection.clone().scale(reverse ? -1.0 : 1.0), vector3i.toVector3d(),
+        new Vector3f());
+    // find if the end is closer or the start
+    world.execute(() -> {
+      world.getEntityStore().getStore().addEntity(transportPacket, AddReason.SPAWN);
+    });
+  }
+
+  public class JunctionResult {
+    public Vector3i JunctionDirection;
+    public String NewPipeID;
+  }
+
+  public JunctionResult atJunction(TransportPacket packet, Vector3d position) {
+    var rounded_position = new Vector3i((int) Math.round(position.x), (int) Math.round(position.y),
+        (int) Math.round(position.z));
+    if (rounded_position.toVector3d().distanceSquaredTo(position) > 0.01f) {
+      return null;
+    }
+    var pipe = graphNodeMap.get(packet.getPipeID());
+    if (pipe == null) {
+      return null;
+    }
+
+    var junction = graphJunctionMap.get(VtoString(rounded_position));
+    if (junction == null) {
+      return null;
+    }
+    var take_it = ThreadLocalRandom.current().nextBoolean();
+    if (rounded_position.equals(pipe.startPosition) || rounded_position
+        .equals(pipe.startPosition.clone().add(pipe.extendDirection.clone().scale(pipe.extendLength)))) {
+      take_it = true;
+    }
+    if (!take_it) {
+      return null;
+    }
+    var direction = packet.getPipeDirection();
+    var pickedJunction = junction[ThreadLocalRandom.current().nextInt(junction.length)];
+    if (direction.equals(pickedJunction.clone().negate())) {
+      return null;
+    }
+    var newjunction = new JunctionResult();
+    newjunction.JunctionDirection = pickedJunction;
+    newjunction.NewPipeID = graphMap.get(VtoString(rounded_position.clone().add(pickedJunction)));
+
+    return newjunction;
+  }
+
+  public boolean isOnPipe(Vector3d position) {
+    var rounded_position = new Vector3i(
+        (int) Math.round(position.x),
+        (int) Math.round(position.y),
+        (int) Math.round(position.z));
+    return graphMap.containsKey(VtoString(rounded_position));
   }
 }

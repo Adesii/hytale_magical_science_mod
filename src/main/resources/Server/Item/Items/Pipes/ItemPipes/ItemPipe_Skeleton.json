@@ -1,0 +1,201 @@
+{
+  "TranslationProperties": {
+    "Name": "server.items.Basic_Pipe.name"
+  },
+  "Icon": "Icons/ItemsGenerated/Basic_Pipe.png",
+  "Categories": [
+    "Blocks.Deco"
+  ],
+  "Interactions": {
+    "Primary": "Block_Primary",
+    "Secondary": "Block_Secondary"
+  },
+  "Set": "Wood_Softwood_Planks",
+  "Recipe": {
+    "TimeSeconds": 0.5,
+    "Input": [
+      {
+        "ResourceTypeId": "Wood_Planks",
+        "Quantity": 2
+      },
+      {
+        "ItemId": "Ingredient_Bar_Iron",
+        "Quantity": 1
+      }
+    ],
+    "OutputQuantity": 4,
+    "BenchRequirement": [
+      {
+        "Id": "Workbench",
+        "Type": "Crafting",
+        "Categories": [
+          "Workbench_Tinkering"
+        ]
+      }
+    ]
+  },
+  "PlayerAnimationsId": "Item",
+  "IconProperties": {
+    "Scale": 0.58823,
+    "Rotation": [
+      22.5,
+      45,
+      22.5
+    ],
+    "Translation": [
+      0,
+      -13.5
+    ]
+  },
+  "Tags": {
+    "Type": [
+      "Basic_Pipe"
+    ]
+  },
+  "ItemSoundSetId": "ISS_Blocks_Wood",
+  "BlockType": {
+    "Opacity": "Transparent",
+    "CustomModel": "Blocks/Fluids/Pipes/Pipe_None.blockymodel",
+    "CustomModelTexture": [
+      {
+        "Texture": "BlockTextures/Fluids/Pipes/Copper_Pipe.png",
+        "Weight": 1
+      }
+    ],
+    "Group": "Wood",
+    "Gathering": {
+      "Breaking": {
+        "GatherType": "SoftBlocks"
+      }
+    },
+    "BlockParticleSetId": "Metal",
+    "Material": "Solid",
+    "HitboxType": "Basic_Pipe",
+    "State": {
+      "Definitions": {
+        "Corner_Left": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Corner_Left.blockymodel",
+          "Basic_Pipe": {
+            "Points": [
+              {
+                "Point": {
+                  "X": 0,
+                  "Y": 0.1,
+                  "Z": 0.5
+                },
+                "Normal": {
+                  "X": 0,
+                  "Y": 1,
+                  "Z": 0
+                }
+              },
+              {
+                "Point": {
+                  "X": 0.3,
+                  "Y": 0.1,
+                  "Z": 0.5
+                },
+                "Normal": {
+                  "X": 0,
+                  "Y": 1,
+                  "Z": 0
+                }
+              },
+              {
+                "Point": {
+                  "X": 0.5,
+                  "Y": 0.1,
+                  "Z": 0.7
+                },
+                "Normal": {
+                  "X": 0,
+                  "Y": 1,
+                  "Z": 0
+                }
+              },
+              {
+                "Point": {
+                  "X": 0.5,
+                  "Y": 0.1,
+                  "Z": 1
+                },
+                "Normal": {
+                  "X": 0,
+                  "Y": 1,
+                  "Z": 0
+                }
+              }
+            ]
+          },
+          "HitboxType": "Basic_Pipe_Elbow"
+        },
+        "Cross": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Cross.blockymodel",
+          "HitboxType": "Basic_Pipe_Cross"
+        },
+        "T": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_T.blockymodel",
+          "HitboxType": "Basic_Pipe_T"
+        },
+        "One_Way": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Straight_One_Way.blockymodel",
+          "HitboxType": "Basic_Pipe_One_Way"
+        },
+        "Straight": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Straight.blockymodel",
+          "HitboxType": "Basic_Pipe_Straight"
+        },
+        "Corner_Full": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Corner_Full.blockymodel",
+          "HitboxType": "Basic_Pipe_Corner_Full"
+        },
+        "Cross_Extra": {
+          "DrawType": "Model",
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Extra_Cross.blockymodel",
+          "HitboxType": "Basic_Pipe_Cross_Extra"
+        },
+        "Full": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Full.blockymodel",
+          "HitboxType": "Basic_Pipe_Full"
+        },
+        "Corner_Special": {
+          "CustomModel": "Blocks/Fluids/Pipes/Pipe_Corner_Special.blockymodel",
+          "HitboxType": "Basic_Pipe_Corner_Special"
+        }
+      }
+    },
+    "ParticleColor": "#828282",
+    "BlockSoundSetId": "Metal",
+    "Supporting": {
+      "North": [
+        {
+          "FaceType": "Basic_Pipe"
+        }
+      ],
+      "East": [
+        {
+          "FaceType": "Basic_Pipe"
+        }
+      ],
+      "South": [
+        {
+          "FaceType": "Basic_Pipe"
+        }
+      ],
+      "West": [
+        {
+          "FaceType": "Basic_Pipe"
+        }
+      ]
+    },
+    "BlockEntity": {
+      "Components": {
+        "Pipe": {
+          "PipeState": 0
+        }
+      }
+    },
+    "CubeShadingMode": "Standard",
+    "DrawType": "Model"
+  }
+}
