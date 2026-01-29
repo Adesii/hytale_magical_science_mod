@@ -63,6 +63,7 @@ public class MSPlugin extends JavaPlugin {
     this.getChunkStoreRegistry().registerSystem(new DebugExtractSystem());
     this.getLogger().at(Level.INFO).log("Registed Magical Science Plugin!");
     Interaction.CODEC.register("UseWrench", ToolWrenchInteraction.class, ToolWrenchInteraction.CODEC);
+
   }
 
   public static Api getLog() {

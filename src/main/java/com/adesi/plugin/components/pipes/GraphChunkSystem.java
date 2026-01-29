@@ -44,6 +44,7 @@ public class GraphChunkSystem extends EntityTickingSystem<ChunkStore> {
     var graphController = archetypeChunkChunkStore.getComponent(index,
         componentType);
     var world = storeChunkStore.getExternalData().getWorld();
+
     if (graphController != null) {
       for (var node : graphController.getNodes()) {
         Vector3d nodeStart = node.startPosition.toVector3d();

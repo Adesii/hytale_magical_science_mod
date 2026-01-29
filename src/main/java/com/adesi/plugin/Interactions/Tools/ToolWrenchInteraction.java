@@ -244,8 +244,7 @@ public class ToolWrenchInteraction extends SimpleBlockInteraction {
 
       var dir = SnapToAxis(hit.position.clone().subtract(0.5).normalize()).negate();
       pipecomponent.toggleBlockedDirection(dir);
-      entitystore.putComponent(entity, PipeComponent.getComponentType(),
-          pipecomponent);
+      entitystore.putComponent(entity, PipeComponent.getComponentType(), pipecomponent);
       var dd = dir.clone().negate();
       var neighbourpipe = worldchunk.getBlockComponentEntity(targetBlock.x + dd.x, targetBlock.y + dd.y,
           targetBlock.z + dd.z);
